@@ -242,7 +242,7 @@ Helper, Setup-Seite, Install-Hook und Upgrade-Hook sind syntaktisch gueltig. Run
 ### test10 Glossary baseline
 
 Feature:            feat07
-Akzeptanzkriterium: feat07.AC01, feat07.AC02
+Akzeptanzkriterium: feat07.AC01, feat07.AC02, feat07.AC03
 Typ:                automatisiert + manuell
 Status:             partial
 Letzter Lauf:       2026-05-23
@@ -257,7 +257,7 @@ Linked:             task06
 Terminologie kann getrennt von Inhaltsuebersetzungen gepflegt werden.
 
 **Beobachtetes Ergebnis**
-Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle, Import/Export und DeepL-v3-Sync sind noch offen.
+Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor, CSV Import/Export und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle und DeepL-v3-Sync sind noch offen.
 
 ### test11 DeepL settings test page
 

@@ -249,6 +249,8 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 - Glossare koennen global oder kursbezogen gepflegt werden.
 - Begriffe haben Sprachrichtung, Status, Prioritaet und optionale Review-Information.
 - Administratoren koennen Glossarbegriffe ueber eine Management-Seite filtern, anlegen und bearbeiten.
+- Administratoren koennen gefilterte Glossarlisten als CSV exportieren und CSV-Dateien importieren.
+- Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert.
 - Langfristig kann ein freigegebenes Glossar mit DeepL Glossaries synchronisiert werden.
 
 **Akzeptanzkriterien**
@@ -262,6 +264,11 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
   Given: Redaktion pflegt Terminologie.
   When: Sie die Glossarverwaltung oeffnet.
   Then: Sie kann nach Begriff, Sprache, Kurs/Kontext und Status filtern.
+
+- `feat07.AC03`
+  Given: Eine gepflegte Glossarliste existiert.
+  When: Administration die Liste als CSV exportiert oder eine CSV importiert.
+  Then: Glossarbegriffe koennen ausserhalb von Moodle gepflegt und kontrolliert zurueckgespielt werden.
 
 **Non-Goals**
 

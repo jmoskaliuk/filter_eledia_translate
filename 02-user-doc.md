@@ -191,6 +191,7 @@ Wenn Fachbegriffe, Produktnamen oder festgelegte Formulierungen konsistent ueber
 4. Glossarbegriff anlegen oder bearbeiten.
 5. Entscheiden, ob der Begriff global fuer alle Kurse oder nur fuer einen Kurs gilt.
 6. Status, Prioritaet, Whole-Word-Option und optionale Notizen pflegen.
+7. Bei Bedarf die gefilterte Liste als CSV exportieren oder eine CSV importieren.
 
 **Erwartetes Ergebnis**
 Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder redaktionelle Qualitaetssicherung genutzt werden.
@@ -199,4 +200,5 @@ Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder 
 
 - `Global / all courses` bedeutet: Der Glossarbegriff gilt kursuebergreifend.
 - Ein ausgewaehlter Kurs bedeutet: Der Glossarbegriff ist auf diesen Kurs beschraenkt.
-- DeepL-Synchronisation und CSV-Import/Export sind als Folgeaufgaben vorgesehen.
+- CSV-Import aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
+- DeepL-Synchronisation ist als Folgeaufgabe vorgesehen.

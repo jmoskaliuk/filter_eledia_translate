@@ -105,25 +105,6 @@ Freigegebene Glossarbegriffe sollen spaeter kontrolliert mit DeepL Glossaries sy
 **Erwartetes Ergebnis**
 Ein technischer Plan fuer DeepL Glossary Sync liegt vor, ohne die aktuelle Pflege-UI zu blockieren.
 
-### task08 Glossar CSV Import/Export ergaenzen
-
-Status:    open
-Feature:   feat07
-Prioritaet: P2
-Linked:    test10
-
-**Ziel**
-Glossarbegriffe koennen fuer redaktionelle Pflege exportiert und wieder importiert werden.
-
-**Schritte**
-1. CSV-Feldschema definieren.
-2. Export fuer gefilterte Glossarlisten bereitstellen.
-3. Import mit Validierung und Konfliktverhalten implementieren.
-4. Testfaelle fuer Pflichtfelder, Sprachcodes und Statuswerte dokumentieren.
-
-**Erwartetes Ergebnis**
-Redaktion kann Terminologie ausserhalb von Moodle pflegen und kontrolliert zurueckspielen.
-
 ### task01 DevFlow an Repository anpassen
 
 Status:    open
@@ -189,6 +170,35 @@ Keine Deploy-Verifikation dokumentiert.
 
 Erledigte Tasks bleiben als Historie erhalten.
 
+### task08 Glossar CSV Import/Export ergaenzen
+
+Status:    done
+Feature:   feat07
+Prioritaet: P2
+Linked:    test10
+
+**Ziel**
+Glossarbegriffe koennen fuer redaktionelle Pflege exportiert und wieder importiert werden.
+
+**Schritte**
+1. CSV-Feldschema definieren.
+2. Export fuer gefilterte Glossarlisten bereitstellen.
+3. Import mit Validierung und Konfliktverhalten implementieren.
+4. Testfaelle fuer Pflichtfelder, Sprachcodes und Statuswerte dokumentieren.
+
+**Erwartetes Ergebnis**
+Redaktion kann Terminologie ausserhalb von Moodle pflegen und kontrolliert zurueckspielen.
+
+**Aktueller Stand**
+Export und Import sind in der Glossarverwaltung verlinkt. Import legt neue Eintraege an und aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test10 in 05-quality.md gruen oder Status dokumentiert
+- [ ] PO Sign-off
+
 ### task06 Glossar-Datenmodell und Pflege-UI entwerfen
 
 Status:    done
@@ -209,7 +219,7 @@ Ein eigenes Glossar-Konzept fuer Terminologie wird als Datenmodell und Pflege-Wo
 Glossarbegriffe sind fachlich und technisch getrennt von normalen Inhaltsuebersetzungen und koennen in Moodle gepflegt werden.
 
 **Aktueller Stand**
-Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular, Scope-Dropdown und Editor sind angelegt. Import/Export und DeepL-v3-Sync sind als `task08` und `task09` offen.
+Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular, Scope-Dropdown und Editor sind angelegt. Import/Export ist ueber `task08` erledigt, DeepL-v3-Sync ist als `task09` offen.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert
