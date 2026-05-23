@@ -28,13 +28,17 @@ Unstrukturierter Input landet zuerst hier und wird danach in Task, Frage, Featur
 
 Linked: `task02`, `test01`
 Asked-by: KI
-Status: open
+Status: answered
 
 **Frage**
 Welcher lokale Moodle-Checkout soll fuer Installation, PHPUnit und UI-Verifikation verwendet werden?
 
 **Warum relevant**
 Das Plugin liegt lokal vor, aber Runtime-Checks brauchen einen Moodle-Root, in den das Plugin als `filter/translations` eingebunden wird.
+
+**Antwort**
+Naheliegender lokaler Moodle-Root fuer die Runtime-Pruefung:
+`/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle/public`
 
 ---
 
@@ -80,7 +84,7 @@ Done-Checkliste
 
 ## In Progress
 
-Keine aktive Arbeit dokumentiert.
+Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten`.
 
 ---
 
@@ -114,7 +118,7 @@ Neue Sessions koennen ueber `00-master.md` starten und finden Status, Features, 
 
 ### task02 Lokale Moodle-Verifikation einrichten
 
-Status:    open
+Status:    next
 Feature:   feat01
 Prioritaet: P1
 Linked:    q01, test01, test02
@@ -131,6 +135,9 @@ Das Plugin lokal in einen Moodle-Checkout einbinden und Installation sowie PHPUn
 
 **Erwartetes Ergebnis**
 Installation und automatisierte Tests sind lokal reproduzierbar dokumentiert.
+
+**Aktueller Stand**
+Nach `task10` sind Schema, Settings, Glossar-UI, CSV-Import/Export und DeepL-v3-Sync syntaktisch gueltig. Offen ist der Moodle-Upgrade-Lauf, UI-Test im Browser und optional ein echter DeepL-Sync mit API-Key.
 
 **Done-Checkliste**
 - [ ] 01-features.md aktualisiert (nicht erforderlich, falls nur Setup)
