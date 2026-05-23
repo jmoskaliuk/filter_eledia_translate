@@ -228,6 +228,42 @@ Die Seite ist ueber die Plugin-Einstellungen und das Uebersetzungsmenue erreichb
 
 CSV Export und Import laufen ueber `glossaryexport.php`, `glossaryimport.php`, `classes/form/glossary_import_form.php` und `templates/glossary_import_summary.mustache`. Der Import nutzt `sourcephrase + sourcelanguage + targetlanguage + courseid` als fachlichen Schluessel: vorhandene Eintraege werden aktualisiert, neue Eintraege werden angelegt. DeepL-v3-Synchronisation ist eine Folgeaufgabe.
 
+### DeepL Glossary Sync Design (`feat07`, `task09`)
+
+Die offizielle DeepL-Dokumentation empfiehlt fuer neue Glossararbeit die v3-Endpunkte. v3 kann ein Glossar mit mehreren Dictionaries, also mehreren Sprachpaaren, verwalten und editieren. v2 bleibt Legacy und sollte nicht mit v3 gemischt werden, weil v3-edited Glossare ueber v2 nicht mehr verlaesslich gelesen oder geloescht werden koennen.
+
+Relevante DeepL-v3-Endpunkte:
+
+- `POST /v3/glossaries` erzeugt ein Glossar mit einer Liste von Dictionaries. Jedes Dictionary enthaelt `source_lang`, `target_lang`, `entries` und `entries_format = tsv`.
+- `GET /v3/glossaries` listet Glossare mit Metadaten und Dictionary-Entry-Counts.
+- `GET /v3/glossaries/{glossary_id}/entries?source_lang=...&target_lang=...` liest Dictionary-Eintraege.
+- `PUT /v3/glossaries/{glossary_id}/dictionaries` ersetzt ein einzelnes Dictionary fuer ein Sprachpaar.
+- `PATCH /v3/glossaries/{glossary_id}` kann Glossar-Metadaten oder Dictionary-Inhalte aktualisieren.
+- `DELETE /v3/glossaries/{glossary_id}` loescht ein Glossar, `DELETE /v3/glossaries/{glossary_id}/dictionaries?...` loescht nur ein Sprachpaar.
+
+Vorgeschlagenes Sync-Modell:
+
+1. Pro Scope wird ein DeepL-Glossar gefuehrt:
+   - global: `eLeDia Translation Glossary - global`
+   - kursbezogen: `eLeDia Translation Glossary - course {courseid}`
+2. Innerhalb eines Glossars wird pro Sprachpaar ein v3-Dictionary gepflegt.
+3. Nur Eintraege mit `status = approved` werden synchronisiert.
+4. Sprachcodes werden ueber die bestehende DeepL-Sprachmapping-Logik normalisiert. Moodle-Codes wie `de`, `en`, `fr` werden fuer Glossaries als DeepL-Codes genutzt; regionale Codes muessen vor der Implementierung gegen die DeepL-Glossary-Language-Pairs validiert werden.
+5. TSV-Eintraege werden aus `sourcephrase<TAB>targetphrase` gebaut. Zeilenumbrueche und Tabs in Phrasen muessen beim Sync validiert oder abgewiesen werden.
+6. Der lokale Sync-Schluessel ist `scope + sourcelanguage + targetlanguage`. Scope ist `global` oder `course:{courseid}`.
+7. Fuer den naechsten Implementierungsschritt sollte eine eigene Sync-Tabelle ergaenzt werden, z. B. `filter_translations_glossarysync`, mit `scope`, `courseid`, `sourcelanguage`, `targetlanguage`, `deeplglossaryid`, `lastsyncedhash`, `status`, `lastsyncerror`, `timemodified`.
+8. Sync sollte explizit durch Admins gestartet werden. Automatische Scheduled-Task-Synchronisation kann spaeter folgen, sollte aber wegen API-Kosten und Fehlerverhalten nicht der erste Schritt sein.
+
+Fehlerverhalten:
+
+- `400/415`: lokale Eintraege oder Payload sind ungueltig; Sync abbrechen und Fehler sichtbar speichern.
+- `401/403`: API-Key oder Plan-Berechtigung fehlerhaft; Sync abbrechen.
+- `413`: Dictionary zu gross; Admin muss Scope oder Sprachpaar aufteilen.
+- `429/529/503`: temporaere Ueberlastung oder Rate Limit; Backoff nutzen und spaeter erneut versuchen.
+- `456`: Quota erreicht; keine weiteren Sync-Versuche bis Admin eingreift.
+
+Quellen: [DeepL v3 Create Glossary](https://developers.deepl.com/api-reference/multilingual-glossaries/create-a-glossary), [DeepL v3 Glossaries Overview](https://developers.deepl.com/api-reference/multilingual-glossaries), [DeepL v2 vs v3 endpoints](https://developers.deepl.com/api-reference/glossaries/v2-vs-v3-endpoints).
+
 ## Technische Constraints
 
 - Das Plugin benoetigt Moodle-Bootstrap; isolierte Ausfuehrung ausserhalb von Moodle ist nur begrenzt moeglich.

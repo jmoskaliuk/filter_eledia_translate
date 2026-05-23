@@ -252,6 +252,7 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 - Administratoren koennen gefilterte Glossarlisten als CSV exportieren und CSV-Dateien importieren.
 - Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert.
 - Langfristig kann ein freigegebenes Glossar mit DeepL Glossaries synchronisiert werden.
+- Fuer DeepL-Sync wird die v3 Glossary API vorgesehen, damit ein Glossar mehrere Sprachpaare als Dictionaries enthalten kann.
 
 **Akzeptanzkriterien**
 
@@ -270,9 +271,14 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
   When: Administration die Liste als CSV exportiert oder eine CSV importiert.
   Then: Glossarbegriffe koennen ausserhalb von Moodle gepflegt und kontrolliert zurueckgespielt werden.
 
+- `feat07.AC04`
+  Given: Glossarbegriffe sind freigegeben.
+  When: Ein DeepL-Sync geplant oder ausgefuehrt wird.
+  Then: Nur `approved` Eintraege werden pro Scope und Sprachpaar in DeepL-v3-Dictionaries ueberfuehrt.
+
 **Non-Goals**
 
-- Keine automatische DeepL-v3-Synchronisation im ersten Schritt.
+- Keine automatische DeepL-v3-Synchronisation ohne ausdruecklichen Admin-Start.
 - Kein Ersatz fuer die bestehende Inhaltsuebersetzungsverwaltung.
 
 ---

@@ -201,4 +201,5 @@ Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder 
 - `Global / all courses` bedeutet: Der Glossarbegriff gilt kursuebergreifend.
 - Ein ausgewaehlter Kurs bedeutet: Der Glossarbegriff ist auf diesen Kurs beschraenkt.
 - CSV-Import aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
-- DeepL-Synchronisation ist als Folgeaufgabe vorgesehen.
+- Fuer DeepL-Sync zaehlen nur freigegebene Eintraege (`Approved`).
+- DeepL-Synchronisation ist vorbereitet und wird als expliziter Admin-Workflow umgesetzt, nicht automatisch im Hintergrund.
