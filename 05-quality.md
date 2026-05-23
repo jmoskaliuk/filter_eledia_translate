@@ -79,7 +79,7 @@ Beobachtetes Ergebnis
 Feature:            feat01
 Akzeptanzkriterium: feat01.AC01
 Typ:                manuell
-Status:             blocked
+Status:             pending
 Letzter Lauf:       2026-05-23
 Linked:             q01, task02
 
@@ -92,14 +92,14 @@ Linked:             q01, task02
 Moodle erkennt und installiert `filter_translations` ohne Fehler.
 
 **Beobachtetes Ergebnis**
-Blockiert, weil der lokale Moodle-Root noch nicht dokumentiert ist.
+Moodle-Root ist dokumentiert. Upgrade-Lauf ist noch nicht ausgefuehrt.
 
 ### test02 PHPUnit Plugin-Suite
 
 Feature:            feat01
 Akzeptanzkriterium: feat01.AC01, feat01.AC02
 Typ:                automatisiert
-Status:             blocked
+Status:             pending
 Letzter Lauf:       2026-05-23
 Linked:             q01, task02
 
@@ -111,7 +111,7 @@ Linked:             q01, task02
 Vorhandene Tests fuer Filter, Translator, Caching, Events, Issues und Language Strings laufen gruen.
 
 **Beobachtetes Ergebnis**
-Blockiert, weil kein Moodle-Root fuer die Testausfuehrung bekannt ist.
+Moodle-Root ist dokumentiert. PHPUnit-Lauf ist noch nicht ausgefuehrt.
 
 ### test03 Translation issue logging
 

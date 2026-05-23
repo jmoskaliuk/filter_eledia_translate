@@ -90,32 +90,6 @@ Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten`.
 
 ## Open
 
-### task01 DevFlow an Repository anpassen
-
-Status:    open
-Feature:   rel01
-Prioritaet: P1
-Linked:    test06
-
-**Ziel**
-Die lokale Projektdokumentation folgt der eLeDia.OS_DevFlow-Struktur und beschreibt den aktuellen Ist-Stand des Moodle-Filter-Plugins.
-
-**Schritte**
-1. DevFlow-Vorgabe aus `jmoskaliuk/eLeDia.OS_DevFlow` sichten.
-2. Root-Dateien `00-master.md` bis `05-quality.md` anlegen.
-3. Bestehende Plugin-Features, Bedienung, Implementierung, Tasks und Qualitaet dokumentieren.
-4. README auf DevFlow-Dateien verlinken.
-
-**Erwartetes Ergebnis**
-Neue Sessions koennen ueber `00-master.md` starten und finden Status, Features, Doku und Qualitaetslage ohne Chat-Kontext.
-
-**Done-Checkliste**
-- [x] 01-features.md aktualisiert
-- [x] 02-user-doc.md aktualisiert
-- [x] 03-dev-doc.md aktualisiert
-- [ ] test06 in 05-quality.md gruen oder Status dokumentiert
-- [ ] PO Sign-off
-
 ### task02 Lokale Moodle-Verifikation einrichten
 
 Status:    next
@@ -127,14 +101,15 @@ Linked:    q01, test01, test02
 Das Plugin lokal in einen Moodle-Checkout einbinden und Installation sowie PHPUnit verifizieren.
 
 **Schritte**
-1. Moodle-Root klaeren.
-2. Repository als `filter/translations` verlinken oder kopieren.
-3. `php admin/cli/upgrade.php` ausfuehren.
-4. PHPUnit initialisieren, falls noetig.
-5. Plugin-Test-Suite ausfuehren.
+1. Repository als `filter/translations` in den dokumentierten Moodle-Root einbinden.
+2. `php admin/cli/upgrade.php` ausfuehren.
+3. PHPUnit initialisieren, falls noetig.
+4. Plugin-Test-Suite ausfuehren.
+5. Glossar-UI, CSV Import/Export und DeepL-Sync-Preview im Browser pruefen.
+6. Optional echten DeepL-v3-Sync mit API-Key ausfuehren.
 
 **Erwartetes Ergebnis**
-Installation und automatisierte Tests sind lokal reproduzierbar dokumentiert.
+Installation, Upgrade, Kern-UI und automatisierte Tests sind lokal reproduzierbar dokumentiert.
 
 **Aktueller Stand**
 Nach `task10` sind Schema, Settings, Glossar-UI, CSV-Import/Export und DeepL-v3-Sync syntaktisch gueltig. Offen ist der Moodle-Upgrade-Lauf, UI-Test im Browser und optional ein echter DeepL-Sync mit API-Key.
@@ -157,6 +132,32 @@ Keine Deploy-Verifikation dokumentiert.
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task01 DevFlow an Repository anpassen
+
+Status:    done
+Feature:   rel01
+Prioritaet: P1
+Linked:    test06
+
+**Ziel**
+Die lokale Projektdokumentation folgt der eLeDia.OS_DevFlow-Struktur und beschreibt den aktuellen Ist-Stand des Moodle-Filter-Plugins.
+
+**Schritte**
+1. DevFlow-Vorgabe aus `jmoskaliuk/eLeDia.OS_DevFlow` sichten.
+2. Root-Dateien `00-master.md` bis `05-quality.md` anlegen.
+3. Bestehende Plugin-Features, Bedienung, Implementierung, Tasks und Qualitaet dokumentieren.
+4. README auf DevFlow-Dateien verlinken.
+
+**Erwartetes Ergebnis**
+Neue Sessions koennen ueber `00-master.md` starten und finden Status, Features, Doku und Qualitaetslage ohne Chat-Kontext.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test06 in 05-quality.md gruen oder Status dokumentiert
+- [ ] PO Sign-off
 
 ### task10 DeepL Glossary Sync implementieren
 

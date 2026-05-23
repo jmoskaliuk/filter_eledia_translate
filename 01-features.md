@@ -287,7 +287,7 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 
 ### rel01 Current baseline
 
-- **Version:** `2.0.1`
-- **Plugin version:** `2025072400`
+- **Version:** `2.1.0-dev`
+- **Plugin version:** `2026052301`
 - **Moodle requires:** `2022112814` / Moodle 4.1.13
-- **Status:** dokumentierter Ist-Stand aus lokalem Repository am 2026-05-23.
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export und DeepL-v3-Glossary-Sync sind implementiert. Runtime-Verifikation in Moodle bleibt offen.
