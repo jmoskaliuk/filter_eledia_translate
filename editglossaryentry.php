@@ -54,6 +54,7 @@ if ($form->is_cancelled()) {
 }
 
 $formdata = $entry->to_record();
+$formdata->courseid = empty($formdata->courseid) ? 0 : $formdata->courseid;
 $formdata->returnurl = $returnurl;
 $form->set_data($formdata);
 

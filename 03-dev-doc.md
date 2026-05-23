@@ -224,7 +224,7 @@ Die Implementierung nutzt Moodle Course Custom Fields ueber die Tabellen `custom
 
 Das Datenmodell ist als Tabelle `filter_translations_glossary` und Persistent `classes/glossary_entry.php` angelegt. Die Pflege-UI besteht aus `manageglossary.php`, `editglossaryentry.php`, `classes/manageglossary_filterform.php`, `classes/manageglossary_table.php` und `classes/glossary_entry_form.php`.
 
-Die Seite ist ueber die Plugin-Einstellungen und das Uebersetzungsmenue erreichbar. DeepL-v3-Synchronisation sowie CSV-Import/Export sind Folgeaufgaben.
+Die Seite ist ueber die Plugin-Einstellungen und das Uebersetzungsmenue erreichbar. `courseid = null` steht fuer globale Glossarbegriffe, konkrete Kurs-IDs begrenzen einen Eintrag auf einen Kurs. Die UI zeigt dafuer einen Scope-Dropdown statt roher IDs. DeepL-v3-Synchronisation sowie CSV-Import/Export sind Folgeaufgaben.
 
 ## Technische Constraints
 

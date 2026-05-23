@@ -33,6 +33,8 @@ class glossary_entry_form extends \moodleform {
      * @return void
      */
     public function definition() {
+        global $DB;
+
         $mform = $this->_form;
         $languages = get_string_manager()->get_list_of_translations();
 
@@ -58,7 +60,15 @@ class glossary_entry_form extends \moodleform {
         $mform->addElement('select', 'targetlanguage', get_string('targetlanguage', 'filter_translations'), $languages);
         $mform->addRule('targetlanguage', null, 'required');
 
-        $mform->addElement('text', 'courseid', get_string('courseid', 'filter_translations'));
+        $courseoptions = [
+            0 => get_string('glossaryscope_global', 'filter_translations'),
+        ];
+        $courses = $DB->get_records_select('course', 'id > :siteid', ['siteid' => SITEID], 'fullname ASC', 'id, fullname');
+        foreach ($courses as $course) {
+            $courseoptions[$course->id] = format_string($course->fullname);
+        }
+
+        $mform->addElement('select', 'courseid', get_string('glossaryscope', 'filter_translations'), $courseoptions);
         $mform->setType('courseid', PARAM_INT);
 
         $mform->addElement('select', 'status', get_string('status', 'filter_translations'), glossary_entry::status_options());

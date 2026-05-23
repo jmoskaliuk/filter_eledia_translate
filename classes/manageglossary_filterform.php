@@ -33,6 +33,8 @@ class manageglossary_filterform extends \moodleform {
      * @return void
      */
     public function definition() {
+        global $DB;
+
         $mform = $this->_form;
 
         $mform->addElement('header', 'filteroptions', get_string('filteroptions', 'filter_translations'));
@@ -50,7 +52,16 @@ class manageglossary_filterform extends \moodleform {
         $mform->addElement('select', 'status', get_string('status', 'filter_translations'),
             [0 => get_string('any', 'filter_translations')] + glossary_entry::status_options());
 
-        $mform->addElement('text', 'courseid', get_string('courseid', 'filter_translations'));
+        $courseoptions = [
+            0 => get_string('any', 'filter_translations'),
+            -1 => get_string('glossaryscope_globalonly', 'filter_translations'),
+        ];
+        $courses = $DB->get_records_select('course', 'id > :siteid', ['siteid' => SITEID], 'fullname ASC', 'id, fullname');
+        foreach ($courses as $course) {
+            $courseoptions[$course->id] = format_string($course->fullname);
+        }
+
+        $mform->addElement('select', 'courseid', get_string('glossaryscope', 'filter_translations'), $courseoptions);
         $mform->setType('courseid', PARAM_INT);
 
         $mform->addElement('submit', 'submit', get_string('update'));

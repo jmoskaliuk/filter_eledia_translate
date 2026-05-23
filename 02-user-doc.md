@@ -187,14 +187,16 @@ Wenn Fachbegriffe, Produktnamen oder festgelegte Formulierungen konsistent ueber
 
 1. Plugin-Einstellungen oder das Uebersetzungsmenue oeffnen.
 2. `Manage glossary` waehlen.
-3. Nach Quellbegriff, Zielbegriff, Sprache, Kurs-ID oder Status filtern.
+3. Nach Quellbegriff, Zielbegriff, Sprache, Glossar-Scope oder Status filtern.
 4. Glossarbegriff anlegen oder bearbeiten.
-5. Status, Prioritaet, Whole-Word-Option und optionale Notizen pflegen.
+5. Entscheiden, ob der Begriff global fuer alle Kurse oder nur fuer einen Kurs gilt.
+6. Status, Prioritaet, Whole-Word-Option und optionale Notizen pflegen.
 
 **Erwartetes Ergebnis**
 Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder redaktionelle Qualitaetssicherung genutzt werden.
 
 **Hinweise**
 
-- Ein leerer Kursbezug bedeutet: globaler Glossarbegriff.
+- `Global / all courses` bedeutet: Der Glossarbegriff gilt kursuebergreifend.
+- Ein ausgewaehlter Kurs bedeutet: Der Glossarbegriff ist auf diesen Kurs beschraenkt.
 - DeepL-Synchronisation und CSV-Import/Export sind als Folgeaufgaben vorgesehen.

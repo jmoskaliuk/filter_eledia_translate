@@ -34,6 +34,9 @@ class manageglossary_table extends table_sql {
     /** @var string[] */
     private $languages;
 
+    /** @var string[] */
+    private $courses;
+
     /**
      * Constructor.
      *
@@ -46,6 +49,11 @@ class manageglossary_table extends table_sql {
         parent::__construct('filter_translations_glossary_table');
 
         $this->languages = get_string_manager()->get_list_of_translations();
+        $this->courses = [];
+        $courses = $DB->get_records_select('course', 'id > :siteid', ['siteid' => SITEID], '', 'id, fullname');
+        foreach ($courses as $course) {
+            $this->courses[$course->id] = format_string($course->fullname);
+        }
 
         $columns = ['sourcephrase', 'targetphrase', 'sourcelanguage', 'targetlanguage', 'courseid', 'status', 'priority', 'actions'];
         $headers = [
@@ -94,7 +102,9 @@ class manageglossary_table extends table_sql {
             $wheres[] = 'g.status = :status';
         }
 
-        if (!empty($filterparams->courseid)) {
+        if ((int)$filterparams->courseid === -1) {
+            $wheres[] = 'g.courseid IS NULL';
+        } else if (!empty($filterparams->courseid)) {
             $params['courseid'] = $filterparams->courseid;
             $wheres[] = 'g.courseid = :courseid';
         }
@@ -166,10 +176,10 @@ class manageglossary_table extends table_sql {
      */
     public function col_courseid($row): string {
         if (empty($row->courseid)) {
-            return get_string('site');
+            return get_string('glossaryscope_global', 'filter_translations');
         }
 
-        return (string)$row->courseid;
+        return $this->courses[$row->courseid] ?? (string)$row->courseid;
     }
 
     /**

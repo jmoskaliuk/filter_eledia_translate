@@ -257,7 +257,7 @@ Linked:             task06
 Terminologie kann getrennt von Inhaltsuebersetzungen gepflegt werden.
 
 **Beobachtetes Ergebnis**
-Schema, Persistent, Listenansicht, Filterformular, Editor und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle, Import/Export und DeepL-v3-Sync sind noch offen.
+Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle, Import/Export und DeepL-v3-Sync sind noch offen.
 
 ### test11 DeepL settings test page
 

@@ -209,7 +209,7 @@ Ein eigenes Glossar-Konzept fuer Terminologie wird als Datenmodell und Pflege-Wo
 Glossarbegriffe sind fachlich und technisch getrennt von normalen Inhaltsuebersetzungen und koennen in Moodle gepflegt werden.
 
 **Aktueller Stand**
-Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular und Editor sind angelegt. Import/Export und DeepL-v3-Sync sind als `task08` und `task09` offen.
+Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular, Scope-Dropdown und Editor sind angelegt. Import/Export und DeepL-v3-Sync sind als `task08` und `task09` offen.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert
