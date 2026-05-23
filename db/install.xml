@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="filter/translations/db" VERSION="20260523" COMMENT="XMLDB file for Moodle filter/translations"
+<XMLDB PATH="filter/translations/db" VERSION="2026052301" COMMENT="XMLDB file for Moodle filter/translations"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -112,6 +112,32 @@
         <INDEX NAME="source_target_lang" UNIQUE="false" FIELDS="sourcelanguage, targetlanguage"/>
         <INDEX NAME="target_status" UNIQUE="false" FIELDS="targetlanguage, status"/>
         <INDEX NAME="course_status" UNIQUE="false" FIELDS="courseid, status"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="filter_translations_glossync" COMMENT="DeepL glossary sync state per scope and language pair">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="scope" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sourcelanguage" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="targetlanguage" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="deeplglossaryid" TYPE="char" LENGTH="80" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="entrycount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="contenthash" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="10" SEQUENCE="false"/>
+        <FIELD NAME="lastsyncerror" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="scope_lang" UNIQUE="false" FIELDS="scope, sourcelanguage, targetlanguage"/>
+        <INDEX NAME="course_lang" UNIQUE="false" FIELDS="courseid, sourcelanguage, targetlanguage"/>
+        <INDEX NAME="deeplglossaryid" UNIQUE="false" FIELDS="deeplglossaryid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

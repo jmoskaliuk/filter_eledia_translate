@@ -82,6 +82,8 @@ if (has_capability('filter/translations:bulkimporttranslations', $context)) {
     echo $OUTPUT->single_button(new moodle_url('/filter/translations/glossaryimport.php'),
         get_string('importglossary', 'filter_translations'));
 }
+echo $OUTPUT->single_button(new moodle_url('/filter/translations/manageglossarysync.php'),
+    get_string('deeplglossarysync', 'filter_translations'));
 echo html_writer::end_div();
 $table->out(100, true);
 echo $OUTPUT->single_button(new moodle_url('/filter/translations/editglossaryentry.php', ['returnurl' => $PAGE->url->out(false)]),

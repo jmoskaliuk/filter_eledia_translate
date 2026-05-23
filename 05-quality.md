@@ -252,13 +252,13 @@ Linked:             task06
 1. Glossar-Datenmodell pruefen.
 2. Pflege-UI mit Filterung pruefen.
 3. Import/Export und Reviewstatus pruefen.
-4. DeepL-v3-Sync-Plan gegen offizielle API-Dokumentation pruefen.
+4. DeepL-v3-Sync-Implementierung gegen offizielle API-Dokumentation und Syntax pruefen.
 
 **Erwartetes Ergebnis**
 Terminologie kann getrennt von Inhaltsuebersetzungen gepflegt werden.
 
 **Beobachtetes Ergebnis**
-Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor, CSV Import/Export und Navigationslinks sind angelegt und syntaktisch gueltig. DeepL-v3-Sync-Plan ist gegen offizielle DeepL-Dokumentation vorbereitet. Runtime-Pruefung in Moodle und Implementierung des Syncs sind noch offen.
+Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor, CSV Import/Export, DeepL-v3-Sync und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle und ein echter DeepL-API-Sync bleiben offen.
 
 ### test11 DeepL settings test page
 

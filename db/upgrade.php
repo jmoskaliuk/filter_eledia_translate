@@ -302,5 +302,36 @@ function xmldb_filter_translations_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026052300, 'filter', 'translations');
     }
 
+    if ($oldversion < 2026052301) {
+        $table = new xmldb_table('filter_translations_glossync');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE);
+        $table->add_field('scope', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null);
+        $table->add_field('sourcelanguage', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL);
+        $table->add_field('targetlanguage', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL);
+        $table->add_field('deeplglossaryid', XMLDB_TYPE_CHAR, '80');
+        $table->add_field('entrycount', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('contenthash', XMLDB_TYPE_CHAR, '32');
+        $table->add_field('status', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '10');
+        $table->add_field('lastsyncerror', XMLDB_TYPE_TEXT);
+        $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL);
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+
+        $table->add_index('scope_lang', XMLDB_INDEX_NOTUNIQUE, ['scope', 'sourcelanguage', 'targetlanguage']);
+        $table->add_index('course_lang', XMLDB_INDEX_NOTUNIQUE, ['courseid', 'sourcelanguage', 'targetlanguage']);
+        $table->add_index('deeplglossaryid', XMLDB_INDEX_NOTUNIQUE, ['deeplglossaryid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026052301, 'filter', 'translations');
+    }
+
     return true;
 }

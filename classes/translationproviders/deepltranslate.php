@@ -27,11 +27,15 @@
 namespace filter_translations\translationproviders;
 
 use curl;
+use filter_translations\glossary_sync;
 
 /**
  * Translation provider to fetch and then retain translations from DeepL.
  */
 class deepltranslate extends translationprovider {
+    /** @var \context|null */
+    private $context = null;
+
     /**
      * If deepl translate is enabled and configured return config, else return false.
      *
@@ -86,7 +90,8 @@ class deepltranslate extends translationprovider {
         require_once($CFG->libdir . "/filelib.php");
 
         $targetlanguage = str_replace('_wp', '', $targetlanguage);
-        $targetlanguage = $this->map_language_to_deepl($targetlanguage);
+        $moodletargetlanguage = $targetlanguage;
+        $targetlanguage = glossary_sync::map_language_to_deepl($targetlanguage);
 
         // Look for any base64 encoded files, create an md5 of their content,
         // use the md5 as a placeholder while we send the text to deepl translate.
@@ -111,14 +116,20 @@ class deepltranslate extends translationprovider {
 
         $sourcelanguage = trim((string)($config->deepl_sourcelang ?? ''));
         if ($sourcelanguage !== '') {
-            $payload['source_lang'] = $this->map_language_to_deepl($sourcelanguage);
+            $payload['source_lang'] = glossary_sync::map_language_to_deepl($sourcelanguage);
         }
 
-        $glossaryid = trim((string)($config->deepl_glossaryid ?? ''));
+        $moodlesourcelanguage = $sourcelanguage !== '' ? $sourcelanguage : $CFG->lang;
+        $moodlesourcelanguage = strtolower(str_replace('-', '_', $moodlesourcelanguage));
+        $moodletargetlanguage = strtolower(str_replace('-', '_', $moodletargetlanguage));
+        $glossaryid = glossary_sync::resolve_deepl_glossary_id($this->context, $moodlesourcelanguage, $moodletargetlanguage);
+        if (empty($glossaryid)) {
+            $glossaryid = trim((string)($config->deepl_glossaryid ?? ''));
+        }
         if ($glossaryid !== '') {
             $payload['glossary_id'] = $glossaryid;
             if (empty($payload['source_lang'])) {
-                $payload['source_lang'] = $this->map_language_to_deepl($CFG->lang);
+                $payload['source_lang'] = glossary_sync::map_language_to_deepl($CFG->lang);
             }
         }
 
@@ -175,6 +186,16 @@ class deepltranslate extends translationprovider {
     }
 
     /**
+     * Set the context used to resolve course-specific synced glossaries.
+     *
+     * @param \context $context
+     * @return void
+     */
+    public function set_context(\context $context): void {
+        $this->context = $context;
+    }
+
+    /**
      * Back off from API - used when errors are getting returned.
      *
      * @return void
@@ -184,34 +205,4 @@ class deepltranslate extends translationprovider {
         set_config('deepl_backoffonerror_time', time(), 'filter_translations');
     }
 
-    /**
-     * Map Moodle language codes to DeepL language codes.
-     *
-     * @param string $moodlecode
-     * @return string
-     */
-    private function map_language_to_deepl(string $moodlecode): string {
-        static $map = [
-            'en_us' => 'EN-US',
-            'en_uk' => 'EN-GB',
-            'en_gb' => 'EN-GB',
-            'pt_br' => 'PT-BR',
-            'pt_pt' => 'PT-PT',
-            'zh_cn' => 'ZH-HANS',
-            'zh_hans' => 'ZH-HANS',
-            'zh_tw' => 'ZH-HANT',
-            'zh_hant' => 'ZH-HANT',
-        ];
-
-        $moodlecode = strtolower(str_replace('-', '_', $moodlecode));
-        if (isset($map[$moodlecode])) {
-            return $map[$moodlecode];
-        }
-
-        if (strpos($moodlecode, '_') !== false) {
-            return strtoupper((string)preg_replace('/_.*/', '', $moodlecode));
-        }
-
-        return strtoupper($moodlecode);
-    }
 }

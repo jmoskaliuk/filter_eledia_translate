@@ -41,6 +41,10 @@ if ($ADMIN->fulltree) {
         html_writer::link(new moodle_url('/filter/translations/manageglossary.php'),
             get_string('manageglossary', 'filter_translations'), ['class' => "btn btn-primary"])));
 
+    $settings->add(new admin_setting_heading('deeplglossarysync', '',
+        html_writer::link(new moodle_url('/filter/translations/manageglossarysync.php'),
+            get_string('deeplglossarysync', 'filter_translations'), ['class' => "btn btn-secondary"])));
+
     $settings->add(new admin_setting_heading('performance', get_string('performance', 'admin'), ''));
 
     $settings->add(new admin_setting_configcheckbox('filter_translations/showperfdata',

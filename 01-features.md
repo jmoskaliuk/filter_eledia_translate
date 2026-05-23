@@ -251,7 +251,7 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 - Administratoren koennen Glossarbegriffe ueber eine Management-Seite filtern, anlegen und bearbeiten.
 - Administratoren koennen gefilterte Glossarlisten als CSV exportieren und CSV-Dateien importieren.
 - Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert.
-- Langfristig kann ein freigegebenes Glossar mit DeepL Glossaries synchronisiert werden.
+- Freigegebene Glossare koennen kontrolliert mit DeepL Glossaries synchronisiert werden.
 - Fuer DeepL-Sync wird die v3 Glossary API vorgesehen, damit ein Glossar mehrere Sprachpaare als Dictionaries enthalten kann.
 
 **Akzeptanzkriterien**

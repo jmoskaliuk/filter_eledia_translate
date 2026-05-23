@@ -86,26 +86,6 @@ Keine aktive Arbeit dokumentiert.
 
 ## Open
 
-### task10 DeepL Glossary Sync implementieren
-
-Status:    open
-Feature:   feat07
-Prioritaet: P2
-Linked:    test10
-
-**Ziel**
-Freigegebene Glossarbegriffe werden kontrolliert mit DeepL-v3-Glossaries synchronisiert.
-
-**Schritte**
-1. Sync-Tabelle fuer Scope/Sprachpaar/DeepL-ID anlegen.
-2. DeepL-v3-Client fuer Glossary Endpunkte implementieren.
-3. Admin-Seite fuer Preview, Sync und Fehleranzeige bauen.
-4. Approved-Eintraege pro Scope und Sprachpaar als TSV serialisieren.
-5. DeepL-ID beim Uebersetzen passend zur Kurs-/Global-Policy auswaehlen.
-
-**Erwartetes Ergebnis**
-Administration kann lokale Glossare kontrolliert nach DeepL synchronisieren und DeepL nutzt die passende Glossary ID bei automatischen Uebersetzungen.
-
 ### task01 DevFlow an Repository anpassen
 
 Status:    open
@@ -170,6 +150,36 @@ Keine Deploy-Verifikation dokumentiert.
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task10 DeepL Glossary Sync implementieren
+
+Status:    done
+Feature:   feat07
+Prioritaet: P2
+Linked:    test10
+
+**Ziel**
+Freigegebene Glossarbegriffe werden kontrolliert mit DeepL-v3-Glossaries synchronisiert.
+
+**Schritte**
+1. Sync-Tabelle fuer Scope/Sprachpaar/DeepL-ID anlegen.
+2. DeepL-v3-Client fuer Glossary Endpunkte implementieren.
+3. Admin-Seite fuer Preview, Sync und Fehleranzeige bauen.
+4. Approved-Eintraege pro Scope und Sprachpaar als TSV serialisieren.
+5. DeepL-ID beim Uebersetzen passend zur Kurs-/Global-Policy auswaehlen.
+
+**Erwartetes Ergebnis**
+Administration kann lokale Glossare kontrolliert nach DeepL synchronisieren und DeepL nutzt die passende Glossary ID bei automatischen Uebersetzungen.
+
+**Aktueller Stand**
+Sync-Tabelle, DeepL-v3-Client, Sync-Service, Admin-Preview, Einzel-Sync und DeepL-Provider-Kopplung sind implementiert. Runtime-Pruefung gegen eine echte DeepL-Konfiguration bleibt offen.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test10 in 05-quality.md gruen oder Status dokumentiert
+- [ ] PO Sign-off
 
 ### task09 DeepL Glossary Sync vorbereiten
 
@@ -246,7 +256,7 @@ Ein eigenes Glossar-Konzept fuer Terminologie wird als Datenmodell und Pflege-Wo
 Glossarbegriffe sind fachlich und technisch getrennt von normalen Inhaltsuebersetzungen und koennen in Moodle gepflegt werden.
 
 **Aktueller Stand**
-Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular, Scope-Dropdown und Editor sind angelegt. Import/Export ist ueber `task08` erledigt, DeepL-v3-Sync ist als `task10` offen.
+Schema, Persistent, Admin-Link, Navbar-Link, Listenansicht, Filterformular, Scope-Dropdown und Editor sind angelegt. Import/Export ist ueber `task08` erledigt, DeepL-v3-Sync ueber `task10`.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert

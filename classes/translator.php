@@ -106,6 +106,7 @@ class translator {
                 if ($config->deepl_enable) {
                     // No dice... try DeepL translate.
                     $deepl = new deepltranslate();
+                    $deepl->set_context($context);
                     $deepltranslation = $deepl->createorupdate_translation($foundhash, $generatedhash, $text, $language, $translation);
 
                     if (!empty($deepltranslation)) {

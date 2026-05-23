@@ -202,4 +202,5 @@ Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder 
 - Ein ausgewaehlter Kurs bedeutet: Der Glossarbegriff ist auf diesen Kurs beschraenkt.
 - CSV-Import aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
 - Fuer DeepL-Sync zaehlen nur freigegebene Eintraege (`Approved`).
-- DeepL-Synchronisation ist vorbereitet und wird als expliziter Admin-Workflow umgesetzt, nicht automatisch im Hintergrund.
+- `DeepL glossary sync` zeigt pro Scope und Sprachpaar eine Vorschau und startet den Sync explizit pro Zeile.
+- Nach erfolgreichem Sync nutzt DeepL automatische Uebersetzungen bevorzugt mit der passenden synchronisierten Glossary ID; kursbezogene Glossare haben Vorrang vor globalen Glossaren.

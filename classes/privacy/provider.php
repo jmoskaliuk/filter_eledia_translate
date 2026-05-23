@@ -43,6 +43,15 @@ class provider implements \core_privacy\local\metadata\provider {
             'usermodified' => 'privacy:metadata:glossary:usermodified',
         ], 'privacy:metadata:glossary');
 
+        $collection->add_database_table('filter_translations_glossync', [
+            'courseid' => 'privacy:metadata:glossarysync:courseid',
+            'sourcelanguage' => 'privacy:metadata:glossarysync:sourcelanguage',
+            'targetlanguage' => 'privacy:metadata:glossarysync:targetlanguage',
+            'deeplglossaryid' => 'privacy:metadata:glossarysync:deeplglossaryid',
+            'lastsyncerror' => 'privacy:metadata:glossarysync:lastsyncerror',
+            'usermodified' => 'privacy:metadata:glossarysync:usermodified',
+        ], 'privacy:metadata:glossarysync');
+
         return $collection;
     }
 }
