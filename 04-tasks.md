@@ -86,6 +86,8 @@ Done-Checkliste
 
 Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten`.
 
+Letzter abgeschlossener Schritt: `task11 Glossar-Import-Dublettenfix und Toolbar-Polish`.
+
 ---
 
 ## Open
@@ -112,7 +114,7 @@ Das Plugin lokal in einen Moodle-Checkout einbinden und Installation sowie PHPUn
 Installation, Upgrade, Kern-UI und automatisierte Tests sind lokal reproduzierbar dokumentiert.
 
 **Aktueller Stand**
-Nach `task10` sind Schema, Settings, Glossar-UI, CSV-Import/Export und DeepL-v3-Sync syntaktisch gueltig. Offen ist der Moodle-Upgrade-Lauf, UI-Test im Browser und optional ein echter DeepL-Sync mit API-Key.
+Nach `task11` sind Schema, Settings, Glossar-UI, CSV-Import/Export, Dublettenhandling beim Import und DeepL-v3-Sync syntaktisch gueltig. Offen ist der Moodle-Upgrade-Lauf, UI-Test im Browser und optional ein echter DeepL-Sync mit API-Key.
 
 **Done-Checkliste**
 - [ ] 01-features.md aktualisiert (nicht erforderlich, falls nur Setup)
@@ -125,13 +127,45 @@ Nach `task10` sind Schema, Settings, Glossar-UI, CSV-Import/Export und DeepL-v3-
 
 ## Verifikation nach Deploy
 
-Keine Deploy-Verifikation dokumentiert.
+- Glossar-Import in Moodle erneut mit der Datei testen, die zuvor `mdb->get_record() found more than one record!` ausgeloest hat.
+- Glossarverwaltung pruefen: Paginierung sichtbar bei mehr als 100 Treffern; `Create glossary entry` steht oben neben `DeepL glossary sync`.
+- Optional DeepL-Sync-Preview oeffnen und einen echten Sync mit Test-Key ausfuehren.
 
 ---
 
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task11 Glossar-Import-Dublettenfix und Toolbar-Polish
+
+Status:    done
+Feature:   feat07
+Prioritaet: P1
+Linked:    bug01, test10
+
+**Ziel**
+Der Glossar-Import soll auch bei vorhandenen Dubletten stabil laufen, und die wichtigsten Glossar-Aktionen sollen oben sichtbar sein.
+
+**Schritte**
+1. Runtime-Notice beim Import analysieren.
+2. Einzelrecord-Lookup durch Mehrfachtreffer-sicheren Lookup ersetzen.
+3. Vorhandene passende Dubletten beim Import gemeinsam aktualisieren.
+4. `Create glossary entry` in die obere Toolbar neben `DeepL glossary sync` verschieben.
+5. DevFlow und Qualitaetsdokumentation aktualisieren.
+
+**Erwartetes Ergebnis**
+CSV-Import laeuft ohne Moodle-Notice bei mehrfach vorhandenen fachlichen Schluesseln. Admins finden Create und Sync direkt oben in der Glossarverwaltung.
+
+**Aktueller Stand**
+Implementiert und nach GitHub gepusht mit Commit `3eb669b Fix glossary import duplicate handling`.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test10/bug01 in 05-quality.md aktualisiert
+- [ ] PO Sign-off
 
 ### task01 DevFlow an Repository anpassen
 
@@ -235,7 +269,7 @@ Glossarbegriffe koennen fuer redaktionelle Pflege exportiert und wieder importie
 Redaktion kann Terminologie ausserhalb von Moodle pflegen und kontrolliert zurueckspielen.
 
 **Aktueller Stand**
-Export und Import sind in der Glossarverwaltung verlinkt. Import legt neue Eintraege an und aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
+Export und Import sind in der Glossarverwaltung verlinkt. Import legt neue Eintraege an und aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope. Seit `task11` werden auch bestehende Dubletten zu diesem Schluessel gemeinsam aktualisiert.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert

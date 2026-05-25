@@ -188,10 +188,11 @@ Wenn Fachbegriffe, Produktnamen oder festgelegte Formulierungen konsistent ueber
 1. Plugin-Einstellungen oder das Uebersetzungsmenue oeffnen.
 2. `Manage glossary` waehlen.
 3. Nach Quellbegriff, Zielbegriff, Sprache, Glossar-Scope oder Status filtern.
-4. Glossarbegriff anlegen oder bearbeiten.
-5. Entscheiden, ob der Begriff global fuer alle Kurse oder nur fuer einen Kurs gilt.
-6. Status, Prioritaet, Whole-Word-Option und optionale Notizen pflegen.
-7. Bei Bedarf die gefilterte Liste als CSV exportieren oder eine CSV importieren.
+4. Oben in der Aktionsleiste einen Glossarbegriff anlegen, DeepL-Sync oeffnen, exportieren oder importieren.
+5. Glossarbegriff anlegen oder bearbeiten.
+6. Entscheiden, ob der Begriff global fuer alle Kurse oder nur fuer einen Kurs gilt.
+7. Status, Prioritaet, Whole-Word-Option und optionale Notizen pflegen.
+8. Bei Bedarf die gefilterte Liste als CSV exportieren oder eine CSV importieren.
 
 **Erwartetes Ergebnis**
 Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder redaktionelle Qualitaetssicherung genutzt werden.
@@ -201,6 +202,8 @@ Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder 
 - `Global / all courses` bedeutet: Der Glossarbegriff gilt kursuebergreifend.
 - Ein ausgewaehlter Kurs bedeutet: Der Glossarbegriff ist auf diesen Kurs beschraenkt.
 - CSV-Import aktualisiert bestehende Eintraege mit gleicher Quellphrase, Sprachrichtung und gleichem Scope.
+- Falls historische Dubletten mit gleichem Schluessel existieren, aktualisiert der Import alle passenden Eintraege ohne Moodle-Notice.
+- Die Glossarliste ist paginiert; aktuell werden 100 Eintraege pro Seite angezeigt.
 - Fuer DeepL-Sync zaehlen nur freigegebene Eintraege (`Approved`).
 - `DeepL glossary sync` zeigt pro Scope und Sprachpaar eine Vorschau und startet den Sync explizit pro Zeile.
 - Nach erfolgreichem Sync nutzt DeepL automatische Uebersetzungen bevorzugt mit der passenden synchronisierten Glossary ID; kursbezogene Glossare haben Vorrang vor globalen Glossaren.

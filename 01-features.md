@@ -249,8 +249,9 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 - Glossare koennen global oder kursbezogen gepflegt werden.
 - Begriffe haben Sprachrichtung, Status, Prioritaet und optionale Review-Information.
 - Administratoren koennen Glossarbegriffe ueber eine Management-Seite filtern, anlegen und bearbeiten.
+- Die Glossarverwaltung nutzt Moodle-Paginierung fuer groessere Eintragslisten.
 - Administratoren koennen gefilterte Glossarlisten als CSV exportieren und CSV-Dateien importieren.
-- Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert.
+- Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert; vorhandene Dubletten werden ohne Runtime-Notice gemeinsam aktualisiert.
 - Freigegebene Glossare koennen kontrolliert mit DeepL Glossaries synchronisiert werden.
 - Fuer DeepL-Sync wird die v3 Glossary API vorgesehen, damit ein Glossar mehrere Sprachpaare als Dictionaries enthalten kann.
 
