@@ -48,7 +48,25 @@ Tatsaechlich
 
 ### Aktueller Bug-Stand
 
-Keine lokalen Bugs dokumentiert.
+### bug01 Glossary import duplicate natural key warning
+
+Feature: feat07
+Severity: S2
+Status: fixed
+Linked: task08, test10
+
+**Beschreibung**
+Der Glossar-CSV-Import nutzte `get_record_select()` fuer den natuerlichen Schluessel aus Quellphrase, Quellsprache, Zielsprache und Kurs-Scope. Wenn lokal bereits mehrere passende Glossarzeilen vorhanden waren, erzeugte Moodle die Notice `mdb->get_record() found more than one record!`.
+
+**Reproduktion**
+1. Mehr als einen Glossar-Eintrag mit gleicher Quellphrase, Sprachrichtung und gleichem Kurs-Scope anlegen.
+2. CSV mit derselben Kombination importieren.
+
+**Erwartet**
+Der Import aktualisiert vorhandene Treffer ohne Runtime-Notice.
+
+**Tatsaechlich**
+Behoben: Der Import liest mehrere Treffer mit `get_records_select()` und aktualisiert alle passenden bestehenden Eintraege.
 
 ---
 
@@ -258,7 +276,7 @@ Linked:             task06
 Terminologie kann getrennt von Inhaltsuebersetzungen gepflegt werden.
 
 **Beobachtetes Ergebnis**
-Schema, Persistent, Listenansicht, Filterformular, Scope-Dropdown, Editor, CSV Import/Export, DeepL-v3-Sync und Navigationslinks sind angelegt und syntaktisch gueltig. Runtime-Pruefung in Moodle und ein echter DeepL-API-Sync bleiben offen.
+Schema, Persistent, Listenansicht mit Moodle-Paginierung, Filterformular, Scope-Dropdown, Editor, CSV Import/Export, DeepL-v3-Sync und Navigationslinks sind angelegt und syntaktisch gueltig. Ein Runtime-Fehler beim Import mit mehrfach vorhandenen natuerlichen Schluesseln wurde als bug01 behoben. Ein echter DeepL-API-Sync bleibt offen.
 
 ### test11 DeepL settings test page
 

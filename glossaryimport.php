@@ -176,9 +176,7 @@ if ($form->is_cancelled()) {
             $params['courseid'] = $courseid;
         }
 
-        $existing = $DB->get_record_select('filter_translations_glossary', $select, $params, 'id');
-        $entry = $existing ? new glossary_entry($existing->id) : new glossary_entry();
-        $entry->from_record((object)[
+        $record = (object)[
             'sourcephrase' => $sourcephrase,
             'targetphrase' => $targetphrase,
             'sourcelanguage' => $sourcelanguage,
@@ -191,12 +189,19 @@ if ($form->is_cancelled()) {
             'wholeword' => $wholeword,
             'notes' => $notes,
             'deeplglossaryid' => $deeplglossaryid,
-        ]);
+        ];
 
-        if ($existing) {
-            $entry->update();
-            $updated++;
+        $existingrecords = $DB->get_records_select('filter_translations_glossary', $select, $params, 'id ASC', 'id');
+        if (!empty($existingrecords)) {
+            foreach ($existingrecords as $existing) {
+                $entry = new glossary_entry($existing->id);
+                $entry->from_record($record);
+                $entry->update();
+                $updated++;
+            }
         } else {
+            $entry = new glossary_entry();
+            $entry->from_record($record);
             $entry->create();
             $created++;
         }

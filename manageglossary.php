@@ -68,6 +68,10 @@ $table->define_baseurl($baseurl);
 echo $OUTPUT->header();
 echo $form->render();
 echo html_writer::start_div('mb-3');
+echo $OUTPUT->single_button(new moodle_url('/filter/translations/editglossaryentry.php', ['returnurl' => $PAGE->url->out(false)]),
+    get_string('createglossaryentry', 'filter_translations'));
+echo $OUTPUT->single_button(new moodle_url('/filter/translations/manageglossarysync.php'),
+    get_string('deeplglossarysync', 'filter_translations'));
 if (has_capability('filter/translations:exporttranslations', $context)) {
     echo $OUTPUT->single_button(new moodle_url('/filter/translations/glossaryexport.php', [
         'sourcephrase' => $sourcephrase,
@@ -82,10 +86,6 @@ if (has_capability('filter/translations:bulkimporttranslations', $context)) {
     echo $OUTPUT->single_button(new moodle_url('/filter/translations/glossaryimport.php'),
         get_string('importglossary', 'filter_translations'));
 }
-echo $OUTPUT->single_button(new moodle_url('/filter/translations/manageglossarysync.php'),
-    get_string('deeplglossarysync', 'filter_translations'));
 echo html_writer::end_div();
 $table->out(100, true);
-echo $OUTPUT->single_button(new moodle_url('/filter/translations/editglossaryentry.php', ['returnurl' => $PAGE->url->out(false)]),
-    get_string('createglossaryentry', 'filter_translations'));
 echo $OUTPUT->footer();
