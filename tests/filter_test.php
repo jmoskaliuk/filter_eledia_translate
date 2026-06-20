@@ -95,6 +95,60 @@ class filter_test extends advanced_testcase {
         );
     }
 
+    public function test_filter_string_uses_unescaped_hash() {
+        global $SESSION;
+
+        $rawtext = 'Research & Development';
+        $generatedhash = md5($rawtext);
+        $contextid = context_system::instance()->id;
+
+        $translation = new translation(0, (object)[
+            'targetlanguage' => 'de',
+            'lastgeneratedhash' => $generatedhash,
+            'md5key' => $generatedhash,
+            'contextid' => $contextid,
+            'substitutetext' => 'Forschung und Entwicklung',
+        ]);
+        $translation->save();
+
+        $SESSION->lang = 'de';
+
+        $filter = new \filter_translations(context_system::instance(), []);
+        $this->assertEquals(
+            'Forschung und Entwicklung',
+            $filter->filter('Research &amp; Development', ['stage' => 'string'])
+        );
+    }
+
+    public function test_cached_hash_translation_does_not_apply_to_plain_text() {
+        global $SESSION;
+
+        $foundhash = md5('stored original text');
+        $contextid = context_system::instance()->id;
+
+        $translation = new translation(0, (object)[
+            'targetlanguage' => 'de',
+            'lastgeneratedhash' => md5('stored original text'),
+            'md5key' => $foundhash,
+            'contextid' => $contextid,
+            'substitutetext' => 'Uebersetzung per eingebettetem Hash',
+        ]);
+        $translation->save();
+
+        $SESSION->lang = 'de';
+        $filter = new \filter_translations(context_system::instance(), []);
+
+        $this->assertEquals(
+            'Uebersetzung per eingebettetem Hash',
+            $filter->filter('<span data-translationhash="' . $foundhash . '"></span>Current text')
+        );
+
+        $this->assertEquals(
+            'Current text',
+            $filter->filter('Current text')
+        );
+    }
+
     public function test_findandremovehash() {
         $filter = new \filter_translations(context_system::instance(), []);
 

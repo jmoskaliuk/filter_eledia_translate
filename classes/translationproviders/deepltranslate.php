@@ -119,18 +119,17 @@ class deepltranslate extends translationprovider {
             $payload['source_lang'] = glossary_sync::map_language_to_deepl($sourcelanguage);
         }
 
-        $moodlesourcelanguage = $sourcelanguage !== '' ? $sourcelanguage : $CFG->lang;
-        $moodlesourcelanguage = strtolower(str_replace('-', '_', $moodlesourcelanguage));
         $moodletargetlanguage = strtolower(str_replace('-', '_', $moodletargetlanguage));
-        $glossaryid = glossary_sync::resolve_deepl_glossary_id($this->context, $moodlesourcelanguage, $moodletargetlanguage);
-        if (empty($glossaryid)) {
-            $glossaryid = trim((string)($config->deepl_glossaryid ?? ''));
+        $glossaryid = '';
+        if ($sourcelanguage !== '') {
+            $moodlesourcelanguage = strtolower(str_replace('-', '_', $sourcelanguage));
+            $glossaryid = glossary_sync::resolve_deepl_glossary_id($this->context, $moodlesourcelanguage, $moodletargetlanguage);
+            if (empty($glossaryid)) {
+                $glossaryid = trim((string)($config->deepl_glossaryid ?? ''));
+            }
         }
         if ($glossaryid !== '') {
             $payload['glossary_id'] = $glossaryid;
-            if (empty($payload['source_lang'])) {
-                $payload['source_lang'] = glossary_sync::map_language_to_deepl($CFG->lang);
-            }
         }
 
         if (!empty($config->deepl_taghandlinghtml)) {

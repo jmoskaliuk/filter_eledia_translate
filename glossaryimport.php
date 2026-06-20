@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 use filter_translations\form\glossary_import_form;
-use filter_translations\glossary_entry;
+use filter_translations\glossary_importer;
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/csvlib.class.php');
@@ -52,19 +52,7 @@ if ($form->is_cancelled()) {
     $csvimport->init();
     unset($filecontents);
 
-    $requiredfields = [
-        'sourcephrase',
-        'targetphrase',
-        'sourcelanguage',
-        'targetlanguage',
-        'courseid',
-        'status',
-        'priority',
-        'casesensitive',
-        'wholeword',
-        'notes',
-        'deeplglossaryid',
-    ];
+    $requiredfields = glossary_importer::REQUIRED_FIELDS;
     $header = $csvimport->get_columns();
 
     if (count($header) !== count($requiredfields)) {
@@ -78,15 +66,12 @@ if ($form->is_cancelled()) {
     }
 
     $languages = get_string_manager()->get_list_of_translations(true);
-    $statusmap = [
-        '10' => glossary_entry::STATUS_DRAFT,
-        '20' => glossary_entry::STATUS_REVIEWED,
-        '30' => glossary_entry::STATUS_APPROVED,
-        '40' => glossary_entry::STATUS_ARCHIVED,
-        'draft' => glossary_entry::STATUS_DRAFT,
-        'reviewed' => glossary_entry::STATUS_REVIEWED,
-        'approved' => glossary_entry::STATUS_APPROVED,
-        'archived' => glossary_entry::STATUS_ARCHIVED,
+    $reasonstrings = [
+        glossary_importer::REASON_MISSING_DATA => 'glossaryimportmissingdata',
+        glossary_importer::REASON_INVALID_LANGUAGE => 'glossaryimportinvalidlanguage',
+        glossary_importer::REASON_INVALID_COURSE => 'glossaryimportinvalidcourse',
+        glossary_importer::REASON_INVALID_STATUS => 'glossaryimportinvalidstatus',
+        glossary_importer::REASON_INVALID_PRIORITY => 'glossaryimportinvalidpriority',
     ];
 
     $processed = 0;
@@ -98,112 +83,20 @@ if ($form->is_cancelled()) {
     while ($line = $csvimport->next()) {
         $processed++;
 
-        $sourcephrase = trim($line[0]);
-        $targetphrase = trim($line[1]);
-        $sourcelanguage = trim($line[2]);
-        $targetlanguage = trim($line[3]);
-        $courseid = trim($line[4]);
-        $statusvalue = strtolower(trim($line[5]));
-        $priority = trim($line[6]);
-        $casesensitive = strtolower(trim($line[7]));
-        $wholeword = strtolower(trim($line[8]));
-        $notes = trim($line[9]);
-        $deeplglossaryid = trim($line[10]);
+        $result = glossary_importer::import_row($line, $languages, $context->id);
 
-        $skip = function(string $reason) use (&$skipped, $linenum, $sourcephrase, $targetlanguage): void {
+        if ($result->action === glossary_importer::ACTION_CREATED) {
+            $created++;
+        } else if ($result->action === glossary_importer::ACTION_UPDATED) {
+            $updated += $result->updated;
+        } else {
             $row = new stdClass();
             $row->linenum = $linenum;
-            $row->sourcephrase = $sourcephrase;
-            $row->targetlanguage = $targetlanguage;
-            $row->reason = $reason;
+            $row->sourcephrase = trim($line[0] ?? '');
+            $row->targetlanguage = trim($line[3] ?? '');
+            $stringkey = $reasonstrings[$result->reason] ?? 'glossaryimportmissingdata';
+            $row->reason = get_string($stringkey, 'filter_translations');
             $skipped[] = $row;
-        };
-
-        if ($sourcephrase === '' || $targetphrase === '' || $sourcelanguage === '' || $targetlanguage === '') {
-            $skip(get_string('glossaryimportmissingdata', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        if (!isset($languages[$sourcelanguage]) || !isset($languages[$targetlanguage])) {
-            $skip(get_string('glossaryimportinvalidlanguage', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        if ($courseid !== '' && !preg_match('/^\d+$/', $courseid)) {
-            $skip(get_string('glossaryimportinvalidcourse', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        $courseid = $courseid === '' ? null : (int)$courseid;
-        if (!empty($courseid) && !$DB->record_exists('course', ['id' => $courseid])) {
-            $skip(get_string('glossaryimportinvalidcourse', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        $status = $statusmap[$statusvalue] ?? null;
-        if ($status === null) {
-            $skip(get_string('glossaryimportinvalidstatus', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        if ($priority !== '' && !preg_match('/^\d+$/', $priority)) {
-            $skip(get_string('glossaryimportinvalidpriority', 'filter_translations'));
-            $linenum++;
-            continue;
-        }
-
-        $priority = $priority === '' ? 100 : (int)$priority;
-        $casesensitive = in_array($casesensitive, ['1', 'true', 'yes', 'y'], true) ? 1 : 0;
-        $wholeword = $wholeword === '' || in_array($wholeword, ['1', 'true', 'yes', 'y'], true) ? 1 : 0;
-        $contextid = empty($courseid) ? $context->id : context_course::instance($courseid)->id;
-
-        $params = [
-            'sourcephrase' => $sourcephrase,
-            'sourcelanguage' => $sourcelanguage,
-            'targetlanguage' => $targetlanguage,
-        ];
-        if (empty($courseid)) {
-            $select = 'sourcephrase = :sourcephrase AND sourcelanguage = :sourcelanguage
-                       AND targetlanguage = :targetlanguage AND courseid IS NULL';
-        } else {
-            $select = 'sourcephrase = :sourcephrase AND sourcelanguage = :sourcelanguage
-                       AND targetlanguage = :targetlanguage AND courseid = :courseid';
-            $params['courseid'] = $courseid;
-        }
-
-        $record = (object)[
-            'sourcephrase' => $sourcephrase,
-            'targetphrase' => $targetphrase,
-            'sourcelanguage' => $sourcelanguage,
-            'targetlanguage' => $targetlanguage,
-            'contextid' => $contextid,
-            'courseid' => empty($courseid) ? null : $courseid,
-            'status' => $status,
-            'priority' => $priority,
-            'casesensitive' => $casesensitive,
-            'wholeword' => $wholeword,
-            'notes' => $notes,
-            'deeplglossaryid' => $deeplglossaryid,
-        ];
-
-        $existingrecords = $DB->get_records_select('filter_translations_glossary', $select, $params, 'id ASC', 'id');
-        if (!empty($existingrecords)) {
-            foreach ($existingrecords as $existing) {
-                $entry = new glossary_entry($existing->id);
-                $entry->from_record($record);
-                $entry->update();
-                $updated++;
-            }
-        } else {
-            $entry = new glossary_entry();
-            $entry->from_record($record);
-            $entry->create();
-            $created++;
         }
 
         $linenum++;

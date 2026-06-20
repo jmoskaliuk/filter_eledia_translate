@@ -129,7 +129,7 @@ class course_customfields {
             'required' => 0,
             'uniquevalues' => 0,
             'locked' => 0,
-            'visibility' => course_handler::NOTVISIBLE,
+            'visibility' => course_handler::VISIBLETEACHERS,
             'defaultvalue' => '',
             'defaultvalueformat' => FORMAT_MOODLE,
             'displaysize' => 0,

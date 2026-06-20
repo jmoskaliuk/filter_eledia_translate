@@ -333,5 +333,80 @@ function xmldb_filter_translations_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026052301, 'filter', 'translations');
     }
 
+    if ($oldversion < 2026061500) {
+        $table = new xmldb_table('filter_translations_glossync');
+
+        // Remove any duplicate sync rows before enforcing uniqueness, keeping the lowest id per natural key.
+        $rs = $DB->get_recordset('filter_translations_glossync', null, 'id ASC');
+        $seen = [];
+        foreach ($rs as $rec) {
+            $courseid = empty($rec->courseid) ? 0 : (int)$rec->courseid;
+            $key = $rec->scope . '|' . $courseid . '|' . $rec->sourcelanguage . '|' . $rec->targetlanguage;
+            if (isset($seen[$key])) {
+                $DB->delete_records('filter_translations_glossync', ['id' => $rec->id]);
+            } else {
+                $seen[$key] = $rec->id;
+            }
+        }
+        $rs->close();
+
+        // Drop the old non-unique index if present.
+        $oldindex = new xmldb_index('scope_lang', XMLDB_INDEX_NOTUNIQUE, ['scope', 'sourcelanguage', 'targetlanguage']);
+        if ($dbman->index_exists($table, $oldindex)) {
+            $dbman->drop_index($table, $oldindex);
+        }
+
+        // Normalise global rows before the unique index is added. Unique indexes do not make NULL values unique.
+        $DB->execute("UPDATE {filter_translations_glossync} SET courseid = 0 WHERE courseid IS NULL");
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'scope');
+        $dbman->change_field_default($table, $field);
+        $dbman->change_field_notnull($table, $field);
+
+        // Add the unique index over the natural key.
+        $newindex = new xmldb_index('scope_course_lang', XMLDB_INDEX_UNIQUE,
+            ['scope', 'courseid', 'sourcelanguage', 'targetlanguage']);
+        if (!$dbman->index_exists($table, $newindex)) {
+            $dbman->add_index($table, $newindex);
+        }
+
+        upgrade_plugin_savepoint(true, 2026061500, 'filter', 'translations');
+    }
+
+    if ($oldversion < 2026061501) {
+        $table = new xmldb_table('filter_translations_glossync');
+
+        $oldindex = new xmldb_index('scope_course_lang', XMLDB_INDEX_UNIQUE,
+            ['scope', 'courseid', 'sourcelanguage', 'targetlanguage']);
+        if ($dbman->index_exists($table, $oldindex)) {
+            $dbman->drop_index($table, $oldindex);
+        }
+
+        $DB->execute("UPDATE {filter_translations_glossync} SET courseid = 0 WHERE courseid IS NULL");
+
+        $rs = $DB->get_recordset('filter_translations_glossync', null, 'id ASC');
+        $seen = [];
+        foreach ($rs as $rec) {
+            $key = $rec->scope . '|' . (int)$rec->courseid . '|' . $rec->sourcelanguage . '|' . $rec->targetlanguage;
+            if (isset($seen[$key])) {
+                $DB->delete_records('filter_translations_glossync', ['id' => $rec->id]);
+            } else {
+                $seen[$key] = $rec->id;
+            }
+        }
+        $rs->close();
+
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'scope');
+        $dbman->change_field_default($table, $field);
+        $dbman->change_field_notnull($table, $field);
+
+        $newindex = new xmldb_index('scope_course_lang', XMLDB_INDEX_UNIQUE,
+            ['scope', 'courseid', 'sourcelanguage', 'targetlanguage']);
+        if (!$dbman->index_exists($table, $newindex)) {
+            $dbman->add_index($table, $newindex);
+        }
+
+        upgrade_plugin_savepoint(true, 2026061501, 'filter', 'translations');
+    }
+
     return true;
 }

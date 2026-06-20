@@ -69,6 +69,30 @@ $alltranslations = $DB->get_records('filter_translations',
     'md5key,lastgeneratedhash'
 );
 
+$existingtranslationhashes = [];
+foreach ($alltranslations as $translation) {
+    $existingtranslationhashes[$translation->md5key] = true;
+    if (!empty($translation->lastgeneratedhash)) {
+        $existingtranslationhashes[$translation->lastgeneratedhash] = true;
+    }
+}
+
+$addexportitem = function($text, int $contextid) use (&$exportdata, $filter, $targetlanguage, &$existingtranslationhashes) {
+    if (!is_string($text) || trim($text) === '') {
+        return;
+    }
+
+    $rawtext = trim($text);
+    $foundhash = $filter->findandremovehash($rawtext);
+    $generatedhash = $filter->generatehash($rawtext);
+    $lookuphash = $foundhash ?? $generatedhash;
+
+    if (!isset($existingtranslationhashes[$lookuphash])) {
+        $exportdata[] = [$lookuphash, $rawtext, '', $targetlanguage, $contextid];
+        $existingtranslationhashes[$lookuphash] = true;
+    }
+};
+
 // Course name.
 $name = trim($course->fullname);
 $generatedhash = $filter->generatehash($name);
@@ -164,6 +188,68 @@ foreach ($modinfo->cms as $cm) {
         }
 
         switch ($cm->modname) {
+            case 'assign':
+                if (!empty($activity->activity)) {
+                    $text = file_rewrite_pluginfile_urls(trim($activity->activity), 'pluginfile.php', $cm->context->id,
+                                'mod_assign', 'activityattachment', 0);
+                    $addexportitem($text, $cm->context->id);
+                }
+            break;
+            case 'choice':
+                $rs = $DB->get_recordset('choice_options', ['choiceid' => $cm->instance]);
+                foreach ($rs as $choiceoption) {
+                    $addexportitem($choiceoption->text, $cm->context->id);
+                }
+                $rs->close();
+            break;
+            case 'feedback':
+                if (!empty($activity->page_after_submit)) {
+                    $text = file_rewrite_pluginfile_urls(trim($activity->page_after_submit), 'pluginfile.php', $cm->context->id,
+                                'mod_feedback', 'page_after_submit', 0);
+                    $addexportitem($text, $cm->context->id);
+                }
+
+                $rs = $DB->get_recordset('feedback_item', ['feedback' => $cm->instance], 'position ASC');
+                foreach ($rs as $feedbackitem) {
+                    $addexportitem($feedbackitem->name, $cm->context->id);
+                    $addexportitem($feedbackitem->label, $cm->context->id);
+
+                    if ($feedbackitem->typ === 'label' && !empty($feedbackitem->presentation)) {
+                        $text = file_rewrite_pluginfile_urls(trim($feedbackitem->presentation), 'pluginfile.php', $cm->context->id,
+                                    'mod_feedback', 'item', $feedbackitem->id);
+                        $addexportitem($text, $cm->context->id);
+                    } else if ($feedbackitem->typ === 'multichoice') {
+                        $parts = explode('>>>>>', $feedbackitem->presentation, 2);
+                        $presentation = $parts[1] ?? $feedbackitem->presentation;
+                        $adjustparts = explode('<<<<<', $presentation, 2);
+                        $presentation = $adjustparts[0];
+                        foreach (explode('|', $presentation) as $optiontext) {
+                            $addexportitem($optiontext, $cm->context->id);
+                        }
+                    } else if ($feedbackitem->typ === 'multichoicerated') {
+                        $parts = explode('>>>>>', $feedbackitem->presentation, 2);
+                        $presentation = $parts[1] ?? $feedbackitem->presentation;
+                        $adjustparts = explode('<<<<<', $presentation, 2);
+                        $presentation = $adjustparts[0];
+                        foreach (explode('|', $presentation) as $optionline) {
+                            $optionparts = explode('####', $optionline, 2);
+                            $addexportitem($optionparts[1] ?? $optionline, $cm->context->id);
+                        }
+                    }
+                }
+                $rs->close();
+            break;
+            case 'glossary':
+                $rs = $DB->get_recordset('glossary_entries', ['glossaryid' => $cm->instance], 'id ASC');
+                foreach ($rs as $glossaryentry) {
+                    $addexportitem($glossaryentry->concept, $cm->context->id);
+
+                    $text = file_rewrite_pluginfile_urls(trim($glossaryentry->definition), 'pluginfile.php', $cm->context->id,
+                                'mod_glossary', 'entry', $glossaryentry->id);
+                    $addexportitem($text, $cm->context->id);
+                }
+                $rs->close();
+            break;
             case 'page':
                 $text = file_rewrite_pluginfile_urls(trim($activity->content), 'pluginfile.php', $cm->context->id,
                             'mod_page', 'content', $activity->revision);
@@ -293,6 +379,17 @@ foreach ($modinfo->cms as $cm) {
 
                 $rs->close();
             break;
+            case 'workshop':
+                foreach (['instructauthors', 'instructreviewers', 'conclusion'] as $field) {
+                    if (empty($activity->$field)) {
+                        continue;
+                    }
+
+                    $text = file_rewrite_pluginfile_urls(trim($activity->$field), 'pluginfile.php', $cm->context->id,
+                                'mod_workshop', $field, null);
+                    $addexportitem($text, $cm->context->id);
+                }
+            break;
             default:
                 ;
             break;
@@ -314,7 +411,7 @@ foreach ($blocksrs as $block) {
         $generatedhash = $filter->generatehash($name);
 
         if (!array_key_exists($generatedhash, $alltranslations)) {
-                $exportdata[] = [$generatedhash, $name, '', $targetlanguage, $cm->context->id];
+                $exportdata[] = [$generatedhash, $name, '', $targetlanguage, $blockinstance->context->id];
         }
     }
 
@@ -344,22 +441,11 @@ foreach ($catrs as $cat) {
         // Question text.
         // Use text as is. Do not replace url placeholders.
         // TODO: In the future, we will always use url placeholders, instead of actual urls.
-        $text = $q->questiontext;
-
-        $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-        if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-            $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-        }
+        $addexportitem($q->questiontext, $coursecontext->id);
 
         // General feedback.
         if (!empty($q->generalfeedback)) {
-            $text = $q->generalfeedback;
-            $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-            if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-                $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-            }
+            $addexportitem($q->generalfeedback, $coursecontext->id);
         }
 
 
@@ -367,33 +453,18 @@ foreach ($catrs as $cat) {
         $fields = array('correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback');
         foreach ($fields as $field) {
             if (isset($q->options->$field) && !empty($q->options->$field)) {
-                $text = $q->options->$field;
-                $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-                if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-                    $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-                }
+                $addexportitem($q->options->$field, $coursecontext->id);
             }
         }
 
         if (isset($q->options->answers)) {
             foreach ($q->options->answers as $answer) {
                 // Answers.
-                $text = $answer->answer;
-                $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-                if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-                    $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-                }
+                $addexportitem($answer->answer, $coursecontext->id);
 
                 // Feedback.
                 if (!empty($answer->feedback)) {
-                    $text = $answer->feedback;
-                    $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-                    if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-                        $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-                    }
+                    $addexportitem($answer->feedback, $coursecontext->id);
                 }
             }
         }
@@ -402,12 +473,7 @@ foreach ($catrs as $cat) {
 
         // Hints.
         foreach ($q->hints as $hint) {
-            $text = $hint->hint;
-            $foundhash = $filter->findandremovehash($text); // May or may not have a translation hash.
-
-            if (!empty($foundhash) && !array_key_exists($foundhash, $alltranslations)) {
-                $exportdata[] = [$foundhash, $text, '', $targetlanguage, $coursecontext->id];
-            }
+            $addexportitem($hint->hint, $coursecontext->id);
         }
     }
 }

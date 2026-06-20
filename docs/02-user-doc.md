@@ -39,6 +39,8 @@ Nutzer sehen uebersetzte Inhalte in ihrer Sprache, sofern passende Uebersetzunge
 
 - Wenn keine passende Uebersetzung existiert, bleibt der Ursprungstext sichtbar.
 - Die Qualitaet automatischer Uebersetzungen haengt vom konfigurierten Provider ab.
+- Aktivitaetstitel und andere Ueberschriften werden nur durch den Filter verarbeitet, wenn Moodle den Filter unter `Site administration > Plugins > Filters > Manage filters` auf `Content and headings` stellt.
+- Aktivitaetstitel mit Sonderzeichen wie `&` koennen jetzt dieselben Uebersetzungen nutzen wie der CSV-Export, weil der Filter die von Moodle escaped dargestellten Titel fuer die Hash-Suche normalisiert.
 
 ---
 
@@ -142,6 +144,8 @@ Uebersetzungsdaten und Translation Hashes koennen kontrolliert gepflegt oder ueb
 
 - Bulk-Operationen koennen gespeicherte Inhalte veraendern.
 - Scheduled Tasks sind fuer grosse Sites standardmaessig ueberwiegend deaktiviert und muessen bewusst aktiviert werden.
+- Der Translation-Export erfasst aktuell Kursname, Kurszusammenfassung, Abschnittsnamen/-inhalte, sichtbare Aktivitaetsnamen, Aktivitaets-Intros, Page, Book, Lesson, HTML-Blocks, Assignment-Aktivitaetstext, Choice-Optionen, Feedback-Elemente, Glossar-Eintraege, Workshop-Instruktionen und Question-Bank-Inhalte.
+- Forum, Wiki, interne H5P/SCORM/IMSCP-Paketinhalte und nutzergenerierte Abgaben sind nicht Teil des automatischen Exports.
 
 ---
 
@@ -207,3 +211,28 @@ Terminologie liegt strukturiert vor und kann spaeter fuer DeepL-Glossaries oder 
 - Fuer DeepL-Sync zaehlen nur freigegebene Eintraege (`Approved`).
 - `DeepL glossary sync` zeigt pro Scope und Sprachpaar eine Vorschau und startet den Sync explizit pro Zeile.
 - Nach erfolgreichem Sync nutzt DeepL automatische Uebersetzungen bevorzugt mit der passenden synchronisierten Glossary ID; kursbezogene Glossare haben Vorrang vor globalen Glossaren.
+
+---
+
+### Setup dashboard (`feat08`)
+
+**Was tut es?**
+Die Setup-Seite buendelt die wichtigsten Informationen und Einstiege fuer das Filter-Plugin.
+
+**Wann nutze ich es?**
+Wenn Admins oder Uebersetzungsmanager den aktuellen Zustand des Plugins pruefen oder schnell in die richtige Verwaltungsseite springen wollen.
+
+**Bedienung**
+
+1. `Site administration > Plugins > Filters > Content translations setup` oeffnen oder in den Plugin-Settings den Button `Content translations setup` nutzen.
+2. Status-Kacheln fuer Uebersetzungen, Translation Issues, Glossar und ausstehende DeepL-Syncs pruefen.
+3. Konfigurationsuebersicht pruefen.
+4. Einen Workflow wie `Manage glossary`, `Manage translations`, `Import glossary`, `Export translations` oder `DeepL glossary sync` oeffnen.
+
+**Erwartetes Ergebnis**
+Die haeufigsten Setup- und Pflegepfade sind von einer Seite aus erreichbar.
+
+**Hinweise**
+
+- Die Seite speichert keine Settings direkt, sondern verlinkt zu den bestehenden Moodle-Settings und Verwaltungsseiten.
+- Admin-only Aktionen erscheinen nur bei passenden Moodle-Rechten.

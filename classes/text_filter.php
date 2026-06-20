@@ -162,10 +162,11 @@ class text_filter extends \moodle_text_filter {
         // Look for a hash in a span tag and remove the span tags.
         $foundhash = $this->findandremovehash($text);
         // Generate a hash based on the text to be translated.
-        $generatedhash = $this->generatehash($text);
+        $generatedhash = $this->generatehash($this->normalisehashtext($text, $options));
         $targetlanguage = current_language();
+        $lookuphash = $foundhash ?? $generatedhash;
 
-        $cachekey = $targetlanguage . ($generatedhash ?? $foundhash);
+        $cachekey = $targetlanguage . $lookuphash;
 
         // Look for a cached translation and return it, unless we're doing in-line translations.
         if (!self::checkinlinestranslation(true)) {
@@ -231,6 +232,25 @@ class text_filter extends \moodle_text_filter {
      */
     public function generatehash($text) {
         return md5(trim($text));
+    }
+
+    /**
+     * Return the form of the text that should be used for hash generation.
+     *
+     * Moodle escapes plain strings before calling format_string() filters, while
+     * exports use the raw database value. Decode only string-stage text so hashes
+     * for activity names match their exported translations.
+     *
+     * @param string $text
+     * @param array $options
+     * @return string
+     */
+    private function normalisehashtext(string $text, array $options): string {
+        if (($options['stage'] ?? null) !== 'string') {
+            return $text;
+        }
+
+        return html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
     /**

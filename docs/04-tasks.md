@@ -42,6 +42,28 @@ Naheliegender lokaler Moodle-Root fuer die Runtime-Pruefung:
 
 ---
 
+### q02 Werden Aktivitaetstitel/Ueberschriften uebersetzt?
+
+Linked: `feat01`, `test15`
+Asked-by: PO
+Status: answered
+
+**Frage**
+Aus einer frueheren Version kam Feedback, dass Ueberschriften von Aktivitaeten nicht uebersetzt werden. Gilt das noch?
+
+**Analyse**
+Moodle ruft Filter auf `format_string()` (Namen, Titel, Abschnitts-/Aktivitaetsueberschriften) nur auf, wenn der Filter in `Website-Administration > Plugins > Textfilter > Filter verwalten` auf **"Inhalt und Ueberschriften"** steht. Default ist "Inhalt", dann laufen Titel nie durch den Filter. Das ist die wahrscheinlichste Ursache.
+
+Zusaetzliche, im Code begruendete Grenzen:
+- Kein Inline-Edit-Button auf Titeln: `format_string()` strippt HTML; der Inline-Editor (Span + Zero-Width-Zeichen) deaktiviert das Strippen nur im Inline-Modus (`filter_translations_after_config`).
+- Titel werden ueber den generierten Hash gematcht (`md5(trim($name))`); eine Uebersetzung greift nur bei exakt passendem Quelltext (manuell angelegt oder per DeepL erzeugt).
+- Die Kurssteuerung muss den Kurs ueberhaupt freigeben (sonst `skiptranslations()` true).
+
+**Antwort**
+Ja, Aktivitaetstitel koennen uebersetzt werden, wenn Moodle den Filter auf `Inhalt und Ueberschriften` stellt. Zusaetzlich wurde ein Hash-Mismatch behoben: Moodle escaped Titel vor `format_string()` als z. B. `&amp;`, der Export hasht aber den Rohwert `&`. `classes/text_filter.php` normalisiert jetzt String-Stage-Text fuer die Hash-Ermittlung.
+
+---
+
 ## Tasks
 
 ### Vorlage
@@ -84,9 +106,9 @@ Done-Checkliste
 
 ## In Progress
 
-Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten`.
+Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten` (Code vorbereitet, es fehlt nur der Runtime-Lauf gegen moodle52).
 
-Letzter abgeschlossener Schritt: `task11 Glossar-Import-Dublettenfix und Toolbar-Polish`.
+Letzter abgeschlossener Schritt: `task16 Zentrale Setup-Seite und Aktivitaetscontent-Export dokumentieren` (Code und DevFlow aktualisiert; Ausfuehrung haengt an `task02`).
 
 ---
 
@@ -114,13 +136,23 @@ Das Plugin lokal in einen Moodle-Checkout einbinden und Installation sowie PHPUn
 Installation, Upgrade, Kern-UI und automatisierte Tests sind lokal reproduzierbar dokumentiert.
 
 **Aktueller Stand**
-Nach `task11` sind Schema, Settings, Glossar-UI, CSV-Import/Export, Dublettenhandling beim Import und DeepL-v3-Sync syntaktisch gueltig. Offen ist der Moodle-Upgrade-Lauf, UI-Test im Browser und optional ein echter DeepL-Sync mit API-Key.
+Nach `task12`/`task13` sind Schema (inkl. Unique-Index `scope_course_lang`), Settings (API-Key als Passwortfeld), Glossar-UI, CSV-Import/Export (jetzt ueber `glossary_importer`), DeepL-v3-Sync und neue PHPUnit-Tests im Repo. Version auf `2026061500` / `2.1.0-beta` gebumpt. Offen ist ausschliesslich der Runtime-Lauf gegen moodle52.
+
+**Runtime-Befehle (auf dem Mac, nicht in der KI-Sandbox)**
+```bash
+MOODLE=/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle/public
+ln -sfn "$(pwd)" "$MOODLE/filter/translations"   # Plugin einbinden
+php "$MOODLE/admin/cli/upgrade.php"               # Upgrade-Step 2026061500 ausfuehren
+php "$MOODLE/admin/tool/phpunit/cli/init.php"     # PHPUnit-Testumgebung (nach Schema-Aenderung noetig)
+cd "$MOODLE" && vendor/bin/phpunit filter/translations/tests
+```
+Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init` und `moodle-plugin-ci phpunit --fail-on-warning`.
 
 **Done-Checkliste**
 - [ ] 01-features.md aktualisiert (nicht erforderlich, falls nur Setup)
-- [ ] 02-user-doc.md aktualisiert (nicht erforderlich)
-- [ ] 03-dev-doc.md aktualisiert
-- [ ] test01/test02 in 05-quality.md gruen
+- [ ] 02-user-doc.md aktualisiert (Hinweis "Inhalt und Ueberschriften", siehe q02)
+- [x] 03-dev-doc.md aktualisiert
+- [ ] test01/test02/test12/test13/test14 in 05-quality.md gruen
 - [ ] PO Sign-off
 
 ---
@@ -136,6 +168,140 @@ Nach `task11` sind Schema, Settings, Glossar-UI, CSV-Import/Export, Dublettenhan
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task16 Zentrale Setup-Seite und Aktivitaetscontent-Export dokumentieren
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat01, feat05, feat08, feat09
+Prioritaet: P1
+Linked:    bug06, bug07, bug08, test15, test16, test17, test18
+
+**Ziel**
+Die aktuelle Iteration aus Titel-Fix, Cache-Fix, erweitertem Export und Setup-Dashboard ist im DevFlow nachvollziehbar.
+
+**Schritte**
+1. `feat08` fuer die zentrale Setup-Seite dokumentieren.
+2. `feat09` fuer erweiterte Aktivitaetscontent-Exports dokumentieren.
+3. User-Doku fuer Titel/Ueberschriften, Dashboard und Export-Abdeckung ergaenzen.
+4. Dev-Doku fuer `index.php`, Exportfelder, Hash-Normalisierung und Cache-Key ergaenzen.
+5. Tests/Bugs in `05-quality.md` aktualisieren.
+
+**Erwartetes Ergebnis**
+Neue Sessions koennen den aktuellen Stand ohne Chat-Kontext aus dem DevFlow ableiten.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test15/test16/test17/test18 in 05-quality.md dokumentiert
+- [ ] PO Sign-off
+
+### task15 Zentrales Setup-Dashboard
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat08
+Prioritaet: P1
+Linked:    test18
+
+**Ziel**
+Eine zentrale Setup- und Einstiegsseite fuer das Filter-Plugin bereitstellen.
+
+**Schritte**
+1. `index.php` mit Status-Kacheln, Konfigurationsuebersicht und Workflow-Links anlegen.
+2. Admin-Externalpage in `settings.php` registrieren.
+3. Button von der bestehenden Settings-Seite zur Setup-Seite ergaenzen.
+4. Capabilities fuer sichtbare Aktionen beruecksichtigen.
+
+**Erwartetes Ergebnis**
+Admins und Uebersetzungsmanager finden die relevanten Plugin-Workflows auf einer Seite.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test18 dokumentiert
+- [ ] PO Sign-off
+
+### task14 Aktivitaetscontent-Export erweitern und Titel/Cache fixen
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat01, feat05, feat09
+Prioritaet: P1
+Linked:    bug06, bug07, bug08, test15, test16, test17
+
+**Ziel**
+Aktivitaetstitel und weitere Aktivitaetsinhalte sollen verlaesslicher uebersetzbar/exportierbar sein.
+
+**Schritte**
+1. String-Stage-Hash fuer `format_string()` normalisieren.
+2. Cache-Key auf `foundhash ?? generatedhash` korrigieren.
+3. `processexport.php` fuer Assignment, Choice, Feedback, Glossary, Workshop und Question Bank erweitern.
+4. HTML-Block-Titel mit Block-Kontext exportieren.
+5. Regressionstests fuer Titel-Hash und Cache-Key ergaenzen.
+
+**Erwartetes Ergebnis**
+Titel mit HTML-Entities matchen exportierte Uebersetzungen; Hash-basierte Cache-Treffer laufen nicht in Klartext ohne Hash; mehr Aktivitaetsinhalte erscheinen im Export.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test15/test16/test17 dokumentiert
+- [ ] PO Sign-off
+
+### task13 PHPUnit fuer Neubau
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat06, feat07
+Prioritaet: P1
+Linked:    test12, test13, test14
+
+**Ziel**
+Die bisher ungetesteten Neubau-Komponenten erhalten PHPUnit-Abdeckung.
+
+**Schritte**
+1. `tests/course_translation_policy_test.php` (Tags, Custom Fields, Fallback, leere Sprachliste, Site-Kontext).
+2. `tests/glossary_sync_test.php` (Sprach-Mapping, Gruppierung nur approved, leere/ungueltige Gruppe ohne Netzwerk, Glossary-ID-Aufloesung Kurs vor global).
+3. `tests/glossary_importer_test.php` (Create/Update, Dubletten-Update als Regression fuer bug01, Kurs-Scope, Validierungs-Skips).
+
+**Erwartetes Ergebnis**
+Policy, Sync und Import sind durch PHPUnit abgesichert; bug01 hat einen Regressionstest.
+
+**Aktueller Stand**
+Tests geschrieben und im Repo. Lokale Ausfuehrung steht aus (kein Moodle-Bootstrap in der KI-Sandbox) und erfolgt mit `task02`.
+
+**Done-Checkliste**
+- [x] 03-dev-doc.md aktualisiert
+- [ ] test12/test13/test14 in 05-quality.md gruen (nach task02)
+- [ ] PO Sign-off
+
+### task12 S3-Fixes aus dem Review
+
+Status:    done
+Feature:   feat04, feat06, feat07
+Prioritaet: P1
+Linked:    bug02, bug03, bug04, bug05
+
+**Ziel**
+Die im Review identifizierten S3-Punkte abraeumen.
+
+**Schritte**
+1. `bug02` Glossary-Sync-Reads auf `IGNORE_MULTIPLE` + Unique-Index `scope_course_lang` (install.xml + Upgrade-Step mit Dedup).
+2. `bug03` DeepL-API-Key auf `admin_setting_configpasswordunmask`.
+3. `bug04` `maturity` auf `MATURITY_BETA`, Release `2.1.0-beta`.
+4. `bug05` Course-Custom-Fields-Sichtbarkeit auf `VISIBLETEACHERS`.
+5. Version auf `2026061500` bumpen, XMLDB-Version angleichen.
+
+**Erwartetes Ergebnis**
+Robustere Sync-Reads, kein Klartext-Key, konsistente Maturity, sichtbare Kursfelder.
+
+**Aktueller Stand**
+Implementiert. Upgrade-Step und Index werden mit `task02` runtime-verifiziert.
+
+**Done-Checkliste**
+- [x] 03-dev-doc.md aktualisiert
+- [x] bug02-bug05 in 05-quality.md aktualisiert
+- [ ] PO Sign-off
 
 ### task11 Glossar-Import-Dublettenfix und Toolbar-Polish
 

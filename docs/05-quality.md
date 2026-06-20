@@ -66,7 +66,92 @@ Der Glossar-CSV-Import nutzte `get_record_select()` fuer den natuerlichen Schlue
 Der Import aktualisiert vorhandene Treffer ohne Runtime-Notice.
 
 **Tatsaechlich**
-Behoben: Der Import liest mehrere Treffer mit `get_records_select()` und aktualisiert alle passenden bestehenden Eintraege.
+Behoben: Der Import liest mehrere Treffer mit `get_records_select()` und aktualisiert alle passenden bestehenden Eintraege. Regressionstest: `test14`.
+
+### bug02 Glossary-Sync-Reads ohne Mehrfachtreffer-Schutz
+
+Feature: feat07
+Severity: S3
+Status: fixed
+Linked: task12, test13
+
+**Beschreibung**
+`glossary_sync::get_state()` und `resolve_deepl_glossary_id()` nutzten `get_record(_select)` ohne `IGNORE_MULTIPLE`. Ohne DB-Constraint konnten doppelte `filter_translations_glossync`-Zeilen die Notice `found more than one record` ausloesen.
+
+**Tatsaechlich**
+Behoben: Reads auf `IGNORE_MULTIPLE` umgestellt; zusaetzlich Unique-Index `scope_course_lang` (scope, courseid, sourcelanguage, targetlanguage) in `install.xml` und Upgrade-Step `2026061500` mit vorheriger Dedup-Bereinigung. Hinweis: Bei `courseid IS NULL` (global) sind doppelte Zeilen DB-seitig nicht vollstaendig ausgeschlossen (NULL-Distinct), daher bleibt der `IGNORE_MULTIPLE`-Schutz die primaere Absicherung. Vollstaendige DB-Eindeutigkeit fuer global wuerde `courseid = 0` statt NULL erfordern (Folge-Task moeglich).
+
+### bug03 DeepL-API-Key im Klartext
+
+Feature: feat04
+Severity: S3
+Status: fixed
+Linked: task12
+
+**Tatsaechlich**
+Behoben: `deepl_apikey` nutzt jetzt `admin_setting_configpasswordunmask` statt `admin_setting_configtext`.
+
+### bug04 Maturity widerspricht Dev-Release
+
+Feature: rel01
+Severity: S4
+Status: fixed
+Linked: task12
+
+**Tatsaechlich**
+Behoben: `maturity` von `MATURITY_STABLE` auf `MATURITY_BETA`, Release `2.1.0-dev` -> `2.1.0-beta`.
+
+### bug05 Course-Custom-Fields unsichtbar
+
+Feature: feat06
+Severity: S3
+Status: fixed
+Linked: task12, test09
+
+**Beschreibung**
+`course_customfields::create_field()` legte die Felder mit `visibility = NOTVISIBLE` an, wodurch sie im Kursformular nicht sichtbar waren.
+
+**Tatsaechlich**
+Behoben: Sichtbarkeit auf `course_handler::VISIBLETEACHERS`. Runtime-Bestaetigung im Kursformular folgt mit `task02`.
+
+### bug06 Aktivitaetstitel mit HTML-Entities matchen Export-Hash nicht
+
+Feature: feat01
+Severity: S2
+Status: fixed
+Linked: task14, test15
+
+**Beschreibung**
+Moodle escaped Strings vor `format_string()`; ein Titel `Research & Development` erreicht den Filter als `Research &amp; Development`. Der Export erzeugt den Hash aber aus dem Rohwert. Dadurch konnte eine vorhandene Uebersetzung fuer den exportierten Titel nicht gefunden werden.
+
+**Tatsaechlich**
+Behoben: `classes/text_filter.php` decodiert nur fuer `stage = string` HTML-Entities vor der Hash-Generierung. Regressionstest: `test_filter_string_uses_unescaped_hash()`.
+
+### bug07 Cache-Key ignoriert gefundenen Translation Hash
+
+Feature: feat01
+Severity: S3
+Status: fixed
+Linked: task14, test16
+
+**Beschreibung**
+Der Filter erzeugte immer einen `generatedhash`; der Cache-Key nutzte deshalb mit `$generatedhash ?? $foundhash` faktisch nie den eingebetteten `data-translationhash`.
+
+**Tatsaechlich**
+Behoben: Der Cache-Key nutzt jetzt `foundhash ?? generatedhash`. Regressionstest: `test_cached_hash_translation_does_not_apply_to_plain_text()`.
+
+### bug08 HTML-Block-Titel nutzt falschen Kontext im Export
+
+Feature: feat05
+Severity: S3
+Status: fixed
+Linked: task14, test17
+
+**Beschreibung**
+Der Export von HTML-Block-Titeln nutzte `$cm->context->id` aus der vorherigen Aktivitaetsschleife statt `$blockinstance->context->id`.
+
+**Tatsaechlich**
+Behoben: Blocktitel und Blocktext verwenden nun denselben Block-Kontext.
 
 ---
 
@@ -297,3 +382,136 @@ DeepL-Testseite meldet Erfolg oder Konfigurationsfehler ohne gespeicherte Uebers
 
 **Beobachtetes Ergebnis**
 Syntax ist gueltig. Runtime-Test bleibt bis zu Moodle-Root und Test-Credentials offen.
+
+### test12 Course translation policy (PHPUnit)
+
+Feature:            feat06
+Akzeptanzkriterium: feat06.AC01, feat06.AC02, feat06.AC03, feat06.AC04
+Typ:                automatisiert
+Status:             pending
+Letzter Lauf:       -
+Linked:             task13
+
+**Schritte**
+1. `vendor/bin/phpunit filter/translations/tests/course_translation_policy_test.php`.
+
+**Erwartetes Ergebnis**
+Tags-, Custom-Fields- und Fallback-Steuerung sowie leere Sprachliste und Site-Kontext verhalten sich wie in feat06 beschrieben.
+
+**Beobachtetes Ergebnis**
+Test geschrieben (`tests/course_translation_policy_test.php`). Noch nicht ausgefuehrt (haengt an task02).
+
+### test13 Glossary sync logic (PHPUnit)
+
+Feature:            feat07
+Akzeptanzkriterium: feat07.AC04
+Typ:                automatisiert
+Status:             pending
+Letzter Lauf:       -
+Linked:             task13, bug02
+
+**Schritte**
+1. `vendor/bin/phpunit filter/translations/tests/glossary_sync_test.php`.
+
+**Erwartetes Ergebnis**
+Sprach-Mapping, Gruppierung nur approved, leere/ungueltige Gruppe ohne Netzwerk und Glossary-ID-Aufloesung (Kurs vor global) stimmen.
+
+**Beobachtetes Ergebnis**
+Test geschrieben (`tests/glossary_sync_test.php`). Noch nicht ausgefuehrt (haengt an task02).
+
+### test14 Glossary importer (PHPUnit)
+
+Feature:            feat07
+Akzeptanzkriterium: feat07.AC03
+Typ:                automatisiert
+Status:             pending
+Letzter Lauf:       -
+Linked:             task13, bug01
+
+**Schritte**
+1. `vendor/bin/phpunit filter/translations/tests/glossary_importer_test.php`.
+
+**Erwartetes Ergebnis**
+Create/Update, gemeinsames Update vorhandener Dubletten (Regression bug01), getrennter Kurs-Scope und Validierungs-Skips funktionieren.
+
+**Beobachtetes Ergebnis**
+Test geschrieben (`tests/glossary_importer_test.php`). Noch nicht ausgefuehrt (haengt an task02).
+
+### test15 Aktivitaetstitel werden uebersetzt
+
+Feature:            feat01
+Akzeptanzkriterium: feat01.AC01 (Ueberschriften)
+Typ:                manuell
+Status:             partial
+Letzter Lauf:       2026-06-20
+Linked:             q02, bug06, task14
+
+**Schritte**
+1. Filter `translations` in "Filter verwalten" auf "Inhalt und Ueberschriften" setzen.
+2. Fuer einen aktivierten Kurs eine Uebersetzung des Aktivitaetstitels anlegen (passender Hash) oder DeepL aktivieren.
+3. Kurs in Zielsprache oeffnen und pruefen, ob der Aktivitaetstitel uebersetzt erscheint.
+
+**Erwartetes Ergebnis**
+Mit "Inhalt und Ueberschriften" werden Aktivitaetstitel via `format_string()` durch den Filter uebersetzt.
+
+**Beobachtetes Ergebnis**
+Code-Fix und PHPUnit-Regressionstest fuer Entity-Hashing ergaenzt. Manuelle Runtime-Pruefung in moodle52 bleibt offen.
+
+### test16 Cache-Key fuer eingebettete Hashes
+
+Feature:            feat01
+Akzeptanzkriterium: feat01.AC01
+Typ:                automatisiert
+Status:             pending
+Letzter Lauf:       -
+Linked:             bug07, task14
+
+**Schritte**
+1. `vendor/bin/phpunit filter/translations/tests/filter_test.php --filter test_cached_hash_translation_does_not_apply_to_plain_text`.
+
+**Erwartetes Ergebnis**
+Eine Cache-Translation fuer Text mit `data-translationhash` wird nicht auf denselben sichtbaren Text ohne Hash angewendet.
+
+**Beobachtetes Ergebnis**
+Test geschrieben. Noch nicht ausgefuehrt (haengt an task02). Syntax-Check fuer `tests/filter_test.php` war gruen.
+
+### test17 Erweiterter Aktivitaetscontent-Export
+
+Feature:            feat09
+Akzeptanzkriterium: feat09.AC01, feat09.AC02
+Typ:                manuell
+Status:             pending
+Letzter Lauf:       -
+Linked:             task14, bug08
+
+**Schritte**
+1. Kurs mit Assignment, Choice, Feedback, Glossary, Workshop und Quiz/Question Bank anlegen.
+2. Missing-Translation-Export fuer eine Zielsprache starten.
+3. CSV pruefen.
+
+**Erwartetes Ergebnis**
+Redaktionelle Inhalte aus den genannten Aktivitaeten erscheinen im CSV; Forum/Wiki und Paketinhalte bleiben bewusst ausgenommen.
+
+**Beobachtetes Ergebnis**
+Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
+
+### test18 Zentrales Setup-Dashboard
+
+Feature:            feat08
+Akzeptanzkriterium: feat08.AC01, feat08.AC02
+Typ:                manuell
+Status:             pending
+Letzter Lauf:       -
+Linked:             task15
+
+**Schritte**
+1. Als Admin `filter/translations/index.php` oeffnen.
+2. Status-Kacheln, Konfigurationsuebersicht und Workflow-Links pruefen.
+3. Als Rolle mit `filter/translations:edittranslations`, aber ohne `moodle/site:config`, oeffnen.
+4. Sichtbarkeit der Admin-only Buttons pruefen.
+
+**Erwartetes Ergebnis**
+Dashboard ist erreichbar, zeigt Status korrekt und blendet Aktionen passend zur Capability aus.
+
+**Beobachtetes Ergebnis**
+Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.

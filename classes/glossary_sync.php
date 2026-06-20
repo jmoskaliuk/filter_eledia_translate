@@ -170,20 +170,20 @@ class glossary_sync {
                 'sourcelanguage' => $sourcelanguage,
                 'targetlanguage' => $targetlanguage,
                 'status' => self::STATUS_SYNCED,
-            ], '*', IGNORE_MISSING);
+            ], '*', IGNORE_MULTIPLE);
             if (!empty($record->deeplglossaryid)) {
                 return $record->deeplglossaryid;
             }
         }
 
-        $select = "scope = :scope AND courseid IS NULL AND sourcelanguage = :source
+        $select = "scope = :scope AND courseid = 0 AND sourcelanguage = :source
                    AND targetlanguage = :target AND status = :status";
         $record = $DB->get_record_select('filter_translations_glossync', $select, [
             'scope' => 'global',
             'source' => $sourcelanguage,
             'target' => $targetlanguage,
             'status' => self::STATUS_SYNCED,
-        ], '*', IGNORE_MISSING);
+        ], '*', IGNORE_MULTIPLE);
 
         return empty($record->deeplglossaryid) ? null : $record->deeplglossaryid;
     }
@@ -211,12 +211,12 @@ class glossary_sync {
         global $DB;
 
         if (empty($group->courseid)) {
-            $select = "scope = :scope AND courseid IS NULL AND sourcelanguage = :source AND targetlanguage = :target";
+            $select = "scope = :scope AND courseid = 0 AND sourcelanguage = :source AND targetlanguage = :target";
             return $DB->get_record_select('filter_translations_glossync', $select, [
                 'scope' => 'global',
                 'source' => $group->sourcelanguage,
                 'target' => $group->targetlanguage,
-            ], '*', IGNORE_MISSING) ?: null;
+            ], '*', IGNORE_MULTIPLE) ?: null;
         }
 
         return $DB->get_record('filter_translations_glossync', [
@@ -224,7 +224,7 @@ class glossary_sync {
             'courseid' => $group->courseid,
             'sourcelanguage' => $group->sourcelanguage,
             'targetlanguage' => $group->targetlanguage,
-        ], '*', IGNORE_MISSING) ?: null;
+        ], '*', IGNORE_MULTIPLE) ?: null;
     }
 
     /**
@@ -237,7 +237,7 @@ class glossary_sync {
         global $DB;
 
         if (empty($group->courseid)) {
-            $select = "scope = :scope AND courseid IS NULL AND deeplglossaryid IS NOT NULL AND deeplglossaryid <> ''";
+            $select = "scope = :scope AND courseid = 0 AND deeplglossaryid IS NOT NULL AND deeplglossaryid <> ''";
             $record = $DB->get_record_select('filter_translations_glossync', $select, ['scope' => 'global'],
                 'id, deeplglossaryid', IGNORE_MULTIPLE);
         } else {
@@ -263,7 +263,7 @@ class glossary_sync {
         $now = time();
         $record = $state ?: (object)[
             'scope' => empty($group->courseid) ? 'global' : 'course',
-            'courseid' => empty($group->courseid) ? null : $group->courseid,
+            'courseid' => empty($group->courseid) ? 0 : $group->courseid,
             'sourcelanguage' => $group->sourcelanguage,
             'targetlanguage' => $group->targetlanguage,
             'timecreated' => $now,

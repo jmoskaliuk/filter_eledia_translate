@@ -44,6 +44,7 @@ php admin/cli/upgrade.php
 | `classes/translation.php` | Persistent Model fuer aktive Uebersetzungen. |
 | `classes/translation_issue.php` | Persistent Model fuer fehlende oder stale Uebersetzungen. |
 | `classes/translationproviders/*` | Reverse Lookup und DeepL. |
+| `index.php` | Zentrales Setup-Dashboard fuer Status, Konfiguration und Workflow-Links. |
 | `classes/*_table.php` | Moodle-Tabellen fuer Verwaltungsseiten. |
 | `classes/*_form.php` und `classes/form/*` | Moodle Forms fuer Filter, Import und Export. |
 | `classes/task/*` | Scheduled Task Implementierungen. |
@@ -98,6 +99,11 @@ Historische Uebersetzungsaenderungen, wenn History Logging aktiv ist.
 8. Missing oder stale Issues werden geloggt, wenn aktiviert.
 9. Der Ersatztext oder der Ursprungstext wird an Moodle zurueckgegeben.
 
+Hash-Details:
+
+- `classes/text_filter.php::normalisehashtext()` decodiert HTML-Entities nur fuer Filteraufrufe mit `stage = string`. Dadurch passen Moodle-Titel aus `format_string()` wieder zu den Rohwerten, die der Export gehasht hat.
+- Der Cache-Key nutzt `foundhash ?? generatedhash`. Damit bleiben explizit markierte Inhalte per `data-translationhash` getrennt von zufaellig gleichem sichtbarem Text ohne Hash.
+
 ## Kurssteuerung
 
 Die Kurssteuerung ist in `classes/course_translation_policy.php` gekapselt. `classes/text_filter.php` fragt diese Policy in `skiptranslations()` und `skiplanguage()` ab.
@@ -134,6 +140,8 @@ Google Translate ist nicht mehr Teil der aktiven Provider-Pipeline.
 ## Admin-Einstellungen
 
 Einstellungen sind in `settings.php` definiert.
+
+`settings.php` registriert zusaetzlich eine Admin-Externalpage `filtertranslationsdashboard` unter `filtersettings`. Die Seite selbst lebt in `index.php`. Nutzer mit `filter/translations:edittranslations` duerfen sie oeffnen; Admin-only Links werden dort ueber `moodle/site:config` und `moodle/course:configurecustomfields` ausgeblendet.
 
 Wichtige Gruppen:
 
@@ -175,6 +183,9 @@ Vorhandene Tests:
 - `tests/translationissue_test.php`
 - `tests/events_test.php`
 - `tests/languagestrings_test.php`
+- `tests/course_translation_policy_test.php` (feat06, Tags/Custom Fields/Fallback)
+- `tests/glossary_sync_test.php` (feat07, Sprach-Mapping, Gruppierung, ID-Aufloesung)
+- `tests/glossary_importer_test.php` (feat07, Import inkl. bug01-Regression)
 
 Ausfuehrung aus dem Moodle-Root:
 
@@ -212,6 +223,18 @@ DeepL ist der einzige externe Provider. Relevante Optionen sind API-Endpunkt, AP
 
 Implementiert ueber CLI-Skripte, Scheduled Tasks, `import.php`, `export.php`, `processexport.php` und Formular-Klassen unter `classes/form/`.
 
+`processexport.php` exportiert neben Kurs-, Abschnitts-, Aktivitaetsnamen und vorhandenen Page/Book/Lesson-Pfaden auch:
+
+- `assign.activity` inklusive Pluginfile-Rewrite fuer `mod_assign/activityattachment`
+- `choice_options.text`
+- `feedback.page_after_submit`, Item-Name/Label, Label-HTML und Multichoice-Optionen
+- `glossary_entries.concept` und `definition`
+- `workshop.instructauthors`, `instructreviewers`, `conclusion`
+- Question-Bank-Felder fuer Fragetext, allgemeines Feedback, options feedback, answers, answer feedback und hints
+- HTML-Block-Titel und -Text mit Block-Kontext
+
+Forum und Wiki sind bewusst nicht erweitert. H5P/SCORM/IMSCP-Paketinhalte werden nicht geparst.
+
 ### Course-level translation control (`feat06`)
 
 Implementiert ueber `classes/course_translation_policy.php`, Admin-Settings in `settings.php`, Cache-Definition `coursepolicy` in `db/caches.php` und die Policy-Aufrufe in `classes/text_filter.php`.
@@ -226,7 +249,7 @@ Das Datenmodell ist als Tabelle `filter_translations_glossary` und Persistent `c
 
 Die Seite ist ueber die Plugin-Einstellungen und das Uebersetzungsmenue erreichbar. `courseid = null` steht fuer globale Glossarbegriffe, konkrete Kurs-IDs begrenzen einen Eintrag auf einen Kurs. Die UI zeigt dafuer einen Scope-Dropdown statt roher IDs. Die Liste nutzt `table_sql` mit Moodle-Paginierung; aktuell gibt `manageglossary.php` 100 Eintraege pro Seite aus.
 
-CSV Export und Import laufen ueber `glossaryexport.php`, `glossaryimport.php`, `classes/form/glossary_import_form.php` und `templates/glossary_import_summary.mustache`. Der Import nutzt `sourcephrase + sourcelanguage + targetlanguage + courseid` als fachlichen Schluessel: vorhandene Eintraege werden aktualisiert, neue Eintraege werden angelegt. Da historische Daten Dubletten enthalten koennen, verwendet der Import `get_records_select()` und aktualisiert alle passenden bestehenden Eintraege, statt mit `get_record_select()` eine Moodle-Notice bei Mehrfachtreffern auszuloesen.
+CSV Export und Import laufen ueber `glossaryexport.php`, `glossaryimport.php`, `classes/form/glossary_import_form.php` und `templates/glossary_import_summary.mustache`. Die Validierungs- und Upsert-Logik pro Zeile liegt seit `task13` in `classes/glossary_importer.php` (`glossary_importer::import_row()`), damit sie unit-testbar ist; `glossaryimport.php` kuemmert sich nur noch um CSV-Einlesen und die Ergebnis-Zusammenfassung. Der Import nutzt `sourcephrase + sourcelanguage + targetlanguage + courseid` als fachlichen Schluessel: vorhandene Eintraege werden aktualisiert, neue Eintraege werden angelegt. Da historische Daten Dubletten enthalten koennen, verwendet der Import `get_records_select()` und aktualisiert alle passenden bestehenden Eintraege, statt mit `get_record_select()` eine Moodle-Notice bei Mehrfachtreffern auszuloesen.
 
 ### DeepL Glossary Sync (`feat07`, `task10`)
 
@@ -254,6 +277,25 @@ Implementiertes Sync-Modell:
 7. Die Sync-Tabelle `filter_translations_glossync` speichert `scope`, `courseid`, `sourcelanguage`, `targetlanguage`, `deeplglossaryid`, `contenthash`, `status`, `lastsyncerror`, `timemodified`.
 8. Sync wird explizit durch Admins auf `manageglossarysync.php` pro Scope und Sprachpaar gestartet. Automatische Scheduled-Task-Synchronisation kann spaeter folgen.
 9. `classes/translationproviders/deepltranslate.php` fragt vor der statisch konfigurierten Glossary ID die Sync-Tabelle ab. Kursbezogene IDs haben Vorrang vor globalen IDs.
+
+### Central setup dashboard (`feat08`)
+
+`index.php` ist eine zentrale, read-only Setup- und Wartungsseite. Sie nutzt Moodle Output APIs und bestehende Workflows statt eigene Speicherlogik einzufuehren.
+
+Die Seite berechnet:
+
+- Gesamtzahl gespeicherter Uebersetzungen aus `filter_translations`
+- Gesamtzahl Translation Issues aus `filter_translation_issues`
+- Gesamtzahl Glossar-Eintraege aus `filter_translations_glossary`
+- ausstehende DeepL-Sync-Gruppen ueber `glossary_sync::groups()`
+- Issue-Counts pro `translation_issue`-Status
+- Glossar-Counts pro `glossary_entry`-Status
+
+Die Seite unterscheidet drei Rechteebenen:
+
+- `filter/translations:edittranslations`: Zugriff auf Dashboard und operative Uebersetzungs-/Glossarworkflows
+- `filter/translations:bulkimporttranslations` / `filter/translations:exporttranslations`: Import-/Export-Workflows
+- `moodle/site:config` und `moodle/course:configurecustomfields`: Admin-Settings, Filterverwaltung, Scheduled Tasks, DeepL-Test und Kursfeld-Setup
 
 Fehlerverhalten:
 

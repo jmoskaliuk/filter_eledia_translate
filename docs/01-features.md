@@ -49,6 +49,8 @@ Moodle-Inhalte werden beim Rendern in die bevorzugte Sprache des Nutzers ueberse
 
 - Das Plugin priorisiert die Sprache des Nutzers und passende Parent-Sprachen.
 - Es sucht Uebersetzungen ueber `data-translationhash`, generierten Inhaltshash und `lastgeneratedhash`.
+- Bei Moodle-String-Rendering (`format_string()`) nutzt das Plugin fuer die Hash-Ermittlung eine normalisierte Fassung, damit Aktivitaetstitel mit HTML-Entities wie `&amp;` zu den exportierten Rohwerten passen.
+- Cache-Eintraege unterscheiden zwischen eingebettetem `data-translationhash` und generiertem Hash, damit Hash-basierte Uebersetzungen nicht versehentlich fuer gleichlautenden Klartext ohne Hash wiederverwendet werden.
 - Stale automatische Uebersetzungen werden nicht wiederverwendet.
 - Spracheigennamen werden nicht uebersetzt.
 
@@ -284,11 +286,75 @@ Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirek
 
 ---
 
+### feat08 Central setup dashboard
+
+**Ziel**
+Administration und Uebersetzungsmanagement sollen eine zentrale Startseite haben, weil Filter-Plugin-Einstellungen in Moodle sonst schwer auffindbar sind.
+
+**Verhalten**
+
+- Eine neue Seite `filter/translations/index.php` buendelt Status, Konfiguration und Workflows.
+- Die Seite zeigt Kennzahlen fuer Uebersetzungen, Translation Issues, Glossarbegriffe und ausstehende Glossar-Sync-Gruppen.
+- Sie verlinkt Plugin-Settings, Filterverwaltung, Kursfeld-Setup, Scheduled Tasks, DeepL-Test und operative Workflows.
+- Sichtbare Aktionen respektieren Capabilities; reine Uebersetzungsmanager sehen keine Admin-only Buttons.
+- Die Seite ist als eigener Admin-Navigationspunkt unter den Filter-Einstellungen registriert und von der bisherigen Settings-Seite verlinkt.
+
+**Akzeptanzkriterien**
+
+- `feat08.AC01`
+  Given: Ein Administrator oeffnet die Plugin-Konfiguration.
+  When: Er die Setup-Seite nutzt.
+  Then: Er findet die wichtigsten Einstellungen, Statusinformationen und Verwaltungsseiten an einem Ort.
+
+- `feat08.AC02`
+  Given: Ein Nutzer hat nur Uebersetzungsrechte.
+  When: Er die Setup-Seite oeffnet.
+  Then: Operative Uebersetzungs- und Glossarworkflows sind sichtbar, Admin-only Aktionen nicht.
+
+**Non-Goals**
+
+- Keine doppelte Speicherung von Settings ausserhalb des Moodle-Admin-Settings-Frameworks.
+- Kein Ersatz fuer die bestehenden Detailseiten zur Uebersetzungs- und Glossarverwaltung.
+
+---
+
+### feat09 Expanded activity content export
+
+**Ziel**
+Der CSV-Export soll nicht nur Aktivitaetstitel und Intro-Texte erfassen, sondern weitere lehrrelevante Aktivitaetsinhalte fuer die Uebersetzung bereitstellen.
+
+**Verhalten**
+
+- Der Export erfasst zusaetzlich zu vorhandenen Bereichen Inhalte aus Assignment, Choice, Feedback, Glossary, Workshop und Question Bank.
+- Forum und Wiki bleiben bewusst ausserhalb des aktuellen Scopes.
+- H5P, SCORM und IMSCP-Paketinhalte werden nicht geparst.
+- Nutzerbeitraege wie Abgaben oder Workshop-Submissions werden nicht als redaktionelle Kursinhalte exportiert.
+
+**Akzeptanzkriterien**
+
+- `feat09.AC01`
+  Given: Ein Kurs enthaelt Choice-Optionen, Feedback-Fragen oder Glossar-Eintraege.
+  When: Ein Admin fehlende Uebersetzungen exportiert.
+  Then: Diese redaktionellen Inhalte erscheinen im CSV, sofern noch keine passende Uebersetzung existiert.
+
+- `feat09.AC02`
+  Given: Eine Frage besitzt keine eingebetteten Translation Spans.
+  When: Die Question Bank exportiert wird.
+  Then: Fragetext, Feedback, Antworten und Hints werden trotzdem ueber generierte Hashes exportiert.
+
+**Non-Goals**
+
+- Keine Uebersetzung von Forum- und Wiki-Inhalten in dieser Iteration.
+- Keine Extraktion interner Paketdaten aus H5P, SCORM oder IMSCP.
+
+---
+
 ## Releases
 
 ### rel01 Current baseline
 
-- **Version:** `2.1.0-dev`
-- **Plugin version:** `2026052301`
+- **Version:** `2.1.1-beta`
+- **Plugin version:** `2026061501`
 - **Moodle requires:** `2022112814` / Moodle 4.1.13
-- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export und DeepL-v3-Glossary-Sync sind implementiert. Runtime-Verifikation in Moodle bleibt offen.
+- **Maturity:** `MATURITY_BETA`
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.

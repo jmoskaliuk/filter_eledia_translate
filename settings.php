@@ -26,8 +26,19 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+if ($hassiteconfig) {
+    $ADMIN->add('filtersettings', new admin_externalpage('filtertranslationsdashboard',
+        get_string('pluginsetup', 'filter_translations'),
+        $CFG->wwwroot . '/filter/translations/index.php',
+        'filter/translations:edittranslations'));
+}
+
 if ($ADMIN->fulltree) {
     $listoftranslations = get_string_manager()->get_list_of_translations(true);
+
+    $settings->add(new admin_setting_heading('pluginsetup', '',
+        html_writer::link(new moodle_url('/filter/translations/index.php'),
+            get_string('pluginsetup', 'filter_translations'), ['class' => "btn btn-primary"])));
 
     $settings->add(new admin_setting_heading('managetranslations', '',
         html_writer::link(new moodle_url('/filter/translations/managetranslations.php'),
@@ -156,8 +167,8 @@ if ($ADMIN->fulltree) {
         get_string('deepl_apiendpoint', 'filter_translations'), '', 'https://api-free.deepl.com/v2/translate',
         PARAM_URL));
 
-    $settings->add(new admin_setting_configtext('filter_translations/deepl_apikey',
-        get_string('deepl_apikey', 'filter_translations'), '', null, PARAM_RAW_TRIMMED, 40));
+    $settings->add(new admin_setting_configpasswordunmask('filter_translations/deepl_apikey',
+        get_string('deepl_apikey', 'filter_translations'), '', ''));
 
     $settings->add(new admin_setting_configtext('filter_translations/deepl_sourcelang',
         get_string('deepl_sourcelang', 'filter_translations'), get_string('deepl_sourcelang_desc', 'filter_translations'),
