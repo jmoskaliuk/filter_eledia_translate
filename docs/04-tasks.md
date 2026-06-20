@@ -108,7 +108,7 @@ Done-Checkliste
 
 Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten` (Code vorbereitet, es fehlt nur der Runtime-Lauf gegen moodle52).
 
-Letzter abgeschlossener Schritt: `task17 Setup-Onboarding-Workflow` (Code und DevFlow aktualisiert; Ausfuehrung haengt an `task02`).
+Letzter abgeschlossener Schritt: `task18 Behat-Regressionstests fuer UI-Workflows` (Feature-Dateien und DevFlow aktualisiert; Ausfuehrung haengt an passender PHP/Behat-Umgebung).
 
 ---
 
@@ -168,6 +168,36 @@ Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init`
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task18 Behat-Regressionstests fuer UI-Workflows
+
+Status:    done (Tests angelegt), Ausfuehrung geblockt durch lokale PHP-Version
+Feature:   feat02, feat07, feat10
+Prioritaet: P1
+Linked:    test20, test21, test22
+
+**Ziel**
+Die zuletzt fehleranfaelligen UI-Pfade erhalten Behat-Abdeckung.
+
+**Schritte**
+1. Behat-Szenarien fuer Glossar-Anlage und Glossarfilter anlegen.
+2. Behat-Szenarien fuer Onboarding-Basics und Speichern zentraler Settings anlegen.
+3. JavaScript-Behat-Szenarien fuer Navbar-Translate-Dropdown und Inline-Translation-Toggle anlegen.
+4. Lokale Ausfuehrbarkeit pruefen und Blocker dokumentieren.
+
+**Erwartetes Ergebnis**
+Regressions wie ein nicht klickbarer Translate-Button oder nicht speicherbare Glossar-Eintraege werden automatisiert auffindbar.
+
+**Aktueller Stand**
+Feature-Dateien liegen unter `tests/behat/`. Lokaler `php admin/tool/behat/cli/init.php` scheitert mit PHP 8.5.5, weil Moodle-Lock-Abhaengigkeiten aktuell PHP bis 8.4 erlauben. Ausfuehrung soll in der Docker-/CI-Umgebung mit PHP 8.4 erfolgen.
+
+**Done-Checkliste**
+- [ ] 01-features.md aktualisiert (nicht erforderlich, Test-only)
+- [ ] 02-user-doc.md aktualisiert (nicht erforderlich, Test-only)
+- [x] 03-dev-doc.md aktualisiert
+- [x] test20/test21/test22 dokumentiert
+- [ ] Behat-Lauf in PHP-8.4-Umgebung gruen
+- [ ] PO Sign-off
 
 ### task17 Setup-Onboarding-Workflow
 

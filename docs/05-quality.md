@@ -537,3 +537,65 @@ Der Wizard speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler 
 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
+
+### test20 Behat Glossar-Anlage und Filter
+
+Feature:            feat07
+Akzeptanzkriterium: feat07.AC02, feat07.AC03
+Typ:                automatisiert Behat
+Status:             blocked
+Letzter Lauf:       2026-06-20
+Linked:             task18
+
+**Schritte**
+1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/manage_glossary.feature`.
+2. Szenario `Create a global glossary entry` prueft Anlage und Sichtbarkeit.
+3. Szenario `Filter glossary entries by language` prueft die Sprachfilter.
+
+**Erwartetes Ergebnis**
+Glossar-Eintraege lassen sich anlegen und nach Sprachrichtung filtern.
+
+**Beobachtetes Ergebnis**
+Feature-Datei angelegt. Lokaler Behat-Init ist blockiert, weil die Shell PHP 8.5.5 nutzt und das Moodle-Lockfile PHP bis 8.4 erlaubt.
+
+### test21 Behat Onboarding-Workflow
+
+Feature:            feat10
+Akzeptanzkriterium: feat10.AC01, feat10.AC02
+Typ:                automatisiert Behat
+Status:             blocked
+Letzter Lauf:       2026-06-20
+Linked:             task18
+
+**Schritte**
+1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/onboarding.feature`.
+2. Onboarding-Seite oeffnen.
+3. Filter-Schritt speichern.
+4. Provider-Schritt mit DeepL-Testdaten speichern.
+
+**Erwartetes Ergebnis**
+Der Wizard zeigt alle Schritte und speichert zentrale Settings ohne Live-API-Abhaengigkeit.
+
+**Beobachtetes Ergebnis**
+Feature-Datei angelegt. Lokaler Behat-Init ist blockiert durch PHP 8.5.5 statt kompatiblem PHP 8.4.
+
+### test22 Behat Translate-Menue und Inline-Toggle
+
+Feature:            feat02
+Akzeptanzkriterium: feat02.AC01
+Typ:                automatisiert Behat + JavaScript
+Status:             blocked
+Letzter Lauf:       2026-06-20
+Linked:             task18
+
+**Schritte**
+1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/inline_translation.feature`.
+2. Filter `translations` global aktivieren.
+3. Navbar-Translate-Dropdown oeffnen.
+4. Inline-Translation starten und erneutes Menue pruefen.
+
+**Erwartetes Ergebnis**
+Der Translate-Button reagiert als Dropdown und der Inline-Modus kann gestartet werden.
+
+**Beobachtetes Ergebnis**
+Feature-Datei angelegt. Lokaler Behat-Init ist blockiert durch PHP 8.5.5 statt kompatiblem PHP 8.4.

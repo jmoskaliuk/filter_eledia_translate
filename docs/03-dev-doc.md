@@ -188,6 +188,12 @@ Vorhandene Tests:
 - `tests/glossary_sync_test.php` (feat07, Sprach-Mapping, Gruppierung, ID-Aufloesung)
 - `tests/glossary_importer_test.php` (feat07, Import inkl. bug01-Regression)
 
+Behat-Tests:
+
+- `tests/behat/manage_glossary.feature` prueft Glossar-Anlage und Sprachfilter.
+- `tests/behat/onboarding.feature` prueft Onboarding-Schritte und Speichern zentraler Settings.
+- `tests/behat/inline_translation.feature` prueft den Navbar-Translate-Dropdown und den Inline-Translation-Toggle.
+
 Ausfuehrung aus dem Moodle-Root:
 
 ```bash
@@ -199,6 +205,15 @@ Fallback, falls die Testsuite lokal nicht registriert ist:
 ```bash
 vendor/bin/phpunit filter/translations/tests
 ```
+
+Behat aus dem Moodle-Root:
+
+```bash
+php admin/tool/behat/cli/init.php
+vendor/bin/behat --tags='@filter_translations'
+```
+
+Hinweis: Die lokale Shell muss eine mit Moodle kompatible PHP-Version nutzen. Der bekannte Moodle-5.2-Docker-Stand nutzt PHP 8.4; Homebrew PHP 8.5.5 ist fuer die aktuellen Composer-Lock-Abhaengigkeiten zu neu.
 
 ## Feature-Implementierung
 
