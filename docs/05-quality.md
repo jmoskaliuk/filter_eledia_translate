@@ -515,3 +515,25 @@ Dashboard ist erreichbar, zeigt Status korrekt und blendet Aktionen passend zur 
 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
+
+### test19 Setup-Onboarding-Workflow
+
+Feature:            feat10
+Akzeptanzkriterium: feat10.AC01, feat10.AC02
+Typ:                manuell
+Status:             pending
+Letzter Lauf:       -
+Linked:             task17
+
+**Schritte**
+1. Als Admin `filter/translations/onboarding.php` oeffnen.
+2. Jeden Schritt speichern und die Weiterleitung zum Folgeschritt pruefen.
+3. Im Filter-Schritt globales Aktivieren und `Content and headings` setzen.
+4. Im Provider-Schritt DeepL API-Endpunkt und API-Key speichern und anschliessend `testdeepl.php` ausfuehren.
+5. Abschluss-Checks pruefen.
+
+**Erwartetes Ergebnis**
+Der Wizard speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler und markiert erledigte Pflichtpunkte im Abschluss.
+
+**Beobachtetes Ergebnis**
+Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.

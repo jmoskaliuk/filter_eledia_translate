@@ -67,6 +67,7 @@ $issueoptions = translation_issue::get_issue_types();
 $glossarystatusoptions = glossary_entry::status_options();
 
 $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'filtersettingtranslations']);
+$onboardingurl = new moodle_url('/filter/translations/onboarding.php');
 $filtermanageurl = new moodle_url('/admin/filters.php');
 $scheduledtasksurl = new moodle_url('/admin/tool/task/scheduledtasks.php');
 $setupcoursefieldsurl = new moodle_url('/filter/translations/setupcoursefields.php', ['sesskey' => sesskey()]);
@@ -155,8 +156,10 @@ echo html_writer::tag('p', get_string('pluginsetup_desc', 'filter_translations')
 
 echo html_writer::start_div('mb-4 d-flex flex-wrap');
 if ($canconfig) {
-    echo html_writer::link($settingsurl, get_string('pluginsettings', 'filter_translations'),
+    echo html_writer::link($onboardingurl, get_string('onboardingtitle', 'filter_translations'),
         ['class' => 'btn btn-primary mr-2 mb-2']);
+    echo html_writer::link($settingsurl, get_string('pluginsettings', 'filter_translations'),
+        ['class' => 'btn btn-secondary mr-2 mb-2']);
     echo html_writer::link($filtermanageurl, get_string('managefilters'), ['class' => 'btn btn-secondary mr-2 mb-2']);
 }
 if ($cansetupcoursefields) {

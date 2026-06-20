@@ -349,6 +349,40 @@ Der CSV-Export soll nicht nur Aktivitaetstitel und Intro-Texte erfassen, sondern
 
 ---
 
+### feat10 Setup onboarding workflow
+
+**Ziel**
+Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Settings springen muessen, sondern schrittweise durch die zentralen Konfigurationsbereiche gefuehrt werden.
+
+**Verhalten**
+
+- Eine eigene Seite `filter/translations/onboarding.php` fuehrt durch Filterstatus, Kurssteuerung, automatische Provider, Logging und Glossarverwaltung.
+- Der Filter-Schritt kann den Filter global aktivieren und auf `Content and headings` stellen.
+- Der Kurs-Schritt pflegt Control Source, Legacy-Tag und Course-Custom-Field-Shortnames und verlinkt die automatische Kursfeldanlage.
+- Der Provider-Schritt pflegt Reverse Lookup, DeepL-Aktivierung, API-Endpunkt, API-Key, Backoff, Source Language, HTML Tag Handling und Glossary ID.
+- Der Logging-Schritt pflegt Missing-/Stale-/History-Logging, Debounce und ausgeschlossene Seiten.
+- Der Glossar-Schritt verlinkt Glossarverwaltung, Import, Export und DeepL-Sync.
+- Der Abschluss zeigt Setup-Checks fuer Filter, Headings, Kurssteuerung, Provider und DeepL-Glossary-Source-Language.
+
+**Akzeptanzkriterien**
+
+- `feat10.AC01`
+  Given: Ein Administrator oeffnet die Plugin-Konfiguration.
+  When: Er den Onboarding-Workflow startet.
+  Then: Er wird schrittweise durch alle wesentlichen Erstkonfigurationen gefuehrt.
+
+- `feat10.AC02`
+  Given: Der Administrator speichert den Filter-Schritt mit Headings aktiv.
+  When: Moodle Filterstatus und String-Anwendung ausliest.
+  Then: Der Filter ist global aktiv und fuer Inhalt plus Ueberschriften konfiguriert.
+
+**Non-Goals**
+
+- Kein neuer Ersatz fuer alle Moodle-Admin-Settings; Detailkonfiguration bleibt weiterhin in den bestehenden Settings erreichbar.
+- Keine Speicherung von DeepL-Testresultaten im Onboarding.
+
+---
+
 ## Releases
 
 ### rel01 Current baseline
@@ -357,4 +391,4 @@ Der CSV-Export soll nicht nur Aktivitaetstitel und Intro-Texte erfassen, sondern
 - **Plugin version:** `2026061501`
 - **Moodle requires:** `2022112814` / Moodle 4.1.13
 - **Maturity:** `MATURITY_BETA`
-- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Onboarding-Workflow, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.

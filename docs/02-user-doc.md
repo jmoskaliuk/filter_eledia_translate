@@ -236,3 +236,31 @@ Die haeufigsten Setup- und Pflegepfade sind von einer Seite aus erreichbar.
 
 - Die Seite speichert keine Settings direkt, sondern verlinkt zu den bestehenden Moodle-Settings und Verwaltungsseiten.
 - Admin-only Aktionen erscheinen nur bei passenden Moodle-Rechten.
+
+---
+
+### Setup onboarding (`feat10`)
+
+**Was tut es?**
+Das Onboarding fuehrt Administratoren schrittweise durch die Erstkonfiguration des Filters.
+
+**Wann nutze ich es?**
+Bei neuen Installationen, nach groesseren Updates oder wenn die wichtigsten Einstellungen geprueft werden sollen.
+
+**Bedienung**
+
+1. `Site administration > Plugins > Filters > Content translations onboarding` oeffnen oder auf der Setup-Seite `Content translations onboarding` waehlen.
+2. Im Schritt `Filter` den Filter aktivieren und fuer `Content and headings` einschalten.
+3. Im Schritt `Course control` Steuerquelle, Tag und Course-Custom-Field-Shortnames pruefen.
+4. Im Schritt `DeepL and providers` Reverse Lookup und/oder DeepL inklusive API-Endpunkt und API-Key konfigurieren.
+5. Im Schritt `Logging` Missing-/Stale-/History-Logging und ausgeschlossene Seiten pflegen.
+6. Im Schritt `Glossary` Glossarverwaltung, Import, Export oder DeepL-Sync oeffnen.
+7. Im Schritt `Finish` die Setup-Checks pruefen.
+
+**Erwartetes Ergebnis**
+Admins koennen die wichtigsten Pflicht- und Qualitaetseinstellungen in einem gefuehrten Ablauf erledigen.
+
+**Hinweise**
+
+- Der DeepL API-Key wird nur aktualisiert, wenn im Onboarding ein neuer Wert eingetragen wird.
+- Aktivitaetstitel werden nur uebersetzt, wenn der Filter fuer Ueberschriften aktiviert ist.

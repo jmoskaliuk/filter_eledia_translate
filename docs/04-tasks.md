@@ -108,7 +108,7 @@ Done-Checkliste
 
 Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten` (Code vorbereitet, es fehlt nur der Runtime-Lauf gegen moodle52).
 
-Letzter abgeschlossener Schritt: `task16 Zentrale Setup-Seite und Aktivitaetscontent-Export dokumentieren` (Code und DevFlow aktualisiert; Ausfuehrung haengt an `task02`).
+Letzter abgeschlossener Schritt: `task17 Setup-Onboarding-Workflow` (Code und DevFlow aktualisiert; Ausfuehrung haengt an `task02`).
 
 ---
 
@@ -168,6 +168,32 @@ Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init`
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task17 Setup-Onboarding-Workflow
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat10
+Prioritaet: P1
+Linked:    test19
+
+**Ziel**
+Administratoren werden durch alle wesentlichen Erstkonfigurationen des Filter-Plugins gefuehrt.
+
+**Schritte**
+1. Admin-Externalpage fuer `filtertranslationsonboarding` registrieren.
+2. `onboarding.php` mit Schritten fuer Filter, Kurssteuerung, Provider, Logging, Glossar und Abschluss-Checks anlegen.
+3. Setup-Dashboard und Plugin-Settings mit Onboarding-Link ergaenzen.
+4. Spracheintraege und DevFlow-Doku aktualisieren.
+
+**Erwartetes Ergebnis**
+Die zentrale Erstkonfiguration inklusive DeepL API kann ueber einen gefuehrten Workflow erledigt werden.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test19 dokumentiert
+- [ ] PO Sign-off
 
 ### task16 Zentrale Setup-Seite und Aktivitaetscontent-Export dokumentieren
 

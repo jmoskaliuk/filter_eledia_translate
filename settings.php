@@ -31,6 +31,11 @@ if ($hassiteconfig) {
         get_string('pluginsetup', 'filter_translations'),
         $CFG->wwwroot . '/filter/translations/index.php',
         'filter/translations:edittranslations'));
+
+    $ADMIN->add('filtersettings', new admin_externalpage('filtertranslationsonboarding',
+        get_string('onboardingtitle', 'filter_translations'),
+        $CFG->wwwroot . '/filter/translations/onboarding.php',
+        'moodle/site:config'));
 }
 
 if ($ADMIN->fulltree) {
@@ -39,6 +44,10 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading('pluginsetup', '',
         html_writer::link(new moodle_url('/filter/translations/index.php'),
             get_string('pluginsetup', 'filter_translations'), ['class' => "btn btn-primary"])));
+
+    $settings->add(new admin_setting_heading('onboarding', '',
+        html_writer::link(new moodle_url('/filter/translations/onboarding.php'),
+            get_string('onboardingtitle', 'filter_translations'), ['class' => "btn btn-primary"])));
 
     $settings->add(new admin_setting_heading('managetranslations', '',
         html_writer::link(new moodle_url('/filter/translations/managetranslations.php'),

@@ -45,6 +45,7 @@ php admin/cli/upgrade.php
 | `classes/translation_issue.php` | Persistent Model fuer fehlende oder stale Uebersetzungen. |
 | `classes/translationproviders/*` | Reverse Lookup und DeepL. |
 | `index.php` | Zentrales Setup-Dashboard fuer Status, Konfiguration und Workflow-Links. |
+| `onboarding.php` | Gefuehrter Admin-Workflow fuer Erstkonfiguration und Setup-Checks. |
 | `classes/*_table.php` | Moodle-Tabellen fuer Verwaltungsseiten. |
 | `classes/*_form.php` und `classes/form/*` | Moodle Forms fuer Filter, Import und Export. |
 | `classes/task/*` | Scheduled Task Implementierungen. |
@@ -141,7 +142,7 @@ Google Translate ist nicht mehr Teil der aktiven Provider-Pipeline.
 
 Einstellungen sind in `settings.php` definiert.
 
-`settings.php` registriert zusaetzlich eine Admin-Externalpage `filtertranslationsdashboard` unter `filtersettings`. Die Seite selbst lebt in `index.php`. Nutzer mit `filter/translations:edittranslations` duerfen sie oeffnen; Admin-only Links werden dort ueber `moodle/site:config` und `moodle/course:configurecustomfields` ausgeblendet.
+`settings.php` registriert zusaetzlich die Admin-Externalpages `filtertranslationsdashboard` und `filtertranslationsonboarding` unter `filtersettings`. Das Dashboard lebt in `index.php`; der gefuehrte Admin-Workflow lebt in `onboarding.php`. Nutzer mit `filter/translations:edittranslations` duerfen das Dashboard oeffnen; Admin-only Links werden dort ueber `moodle/site:config` und `moodle/course:configurecustomfields` ausgeblendet. Das Onboarding benoetigt `moodle/site:config`, weil es globale Filter- und Provider-Einstellungen inklusive DeepL API-Key speichern kann.
 
 Wichtige Gruppen:
 
@@ -306,6 +307,21 @@ Fehlerverhalten:
 - `456`: Quota erreicht; keine weiteren Sync-Versuche bis Admin eingreift.
 
 Quellen: [DeepL v3 Create Glossary](https://developers.deepl.com/api-reference/multilingual-glossaries/create-a-glossary), [DeepL v3 Glossaries Overview](https://developers.deepl.com/api-reference/multilingual-glossaries), [DeepL v2 vs v3 endpoints](https://developers.deepl.com/api-reference/glossaries/v2-vs-v3-endpoints).
+
+### Setup onboarding workflow (`feat10`)
+
+`onboarding.php` ist eine Moodle-Admin-Externalpage mit eigener Schrittsteuerung ueber den URL-Parameter `step`.
+
+Implementierte Schritte:
+
+- `filter`: nutzt `filter_set_global_state()`, `filter_set_applies_to_strings()` und `reset_text_filters_cache()`.
+- `course`: schreibt `coursecontrolsource`, `coursetagenabled`, `coursefieldenabled` und `coursefieldlanguages`.
+- `provider`: schreibt Reverse-Lookup- und DeepL-Settings; `deepl_apikey` wird nur bei nicht leerer Eingabe ersetzt.
+- `logging`: schreibt Missing-/Stale-/History-Logging, `logdebounce` und `untranslatedpages`.
+- `glossary`: verlinkt bestehende Glossar-, Import-, Export- und Sync-Seiten.
+- `finish`: zeigt lesende Setup-Checks fuer die wichtigsten Konfigurationsrisiken.
+
+Die Seite fuehrt keine eigene Validierung gegen die DeepL API aus; dafuer bleibt `testdeepl.php` verantwortlich.
 
 ## Technische Constraints
 
