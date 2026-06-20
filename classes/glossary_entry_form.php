@@ -36,7 +36,7 @@ class glossary_entry_form extends \moodleform {
         global $DB;
 
         $mform = $this->_form;
-        $languages = get_string_manager()->get_list_of_translations();
+        $languages = get_string_manager()->get_list_of_translations(true);
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);

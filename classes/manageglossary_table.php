@@ -48,7 +48,7 @@ class manageglossary_table extends table_sql {
 
         parent::__construct('filter_translations_glossary_table');
 
-        $this->languages = get_string_manager()->get_list_of_translations();
+        $this->languages = get_string_manager()->get_list_of_translations(true);
         $this->courses = [];
         $courses = $DB->get_records_select('course', 'id > :siteid', ['siteid' => SITEID], '', 'id, fullname');
         foreach ($courses as $course) {
