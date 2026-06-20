@@ -153,20 +153,19 @@ echo $OUTPUT->header();
 echo html_writer::start_div('filter-translations-dashboard');
 echo html_writer::tag('p', get_string('pluginsetup_desc', 'filter_translations'), ['class' => 'lead']);
 
-echo html_writer::start_div('mb-4');
+echo html_writer::start_div('mb-4 d-flex flex-wrap');
 if ($canconfig) {
-    echo $OUTPUT->single_button($settingsurl, get_string('pluginsettings', 'filter_translations'), 'get',
-        ['class' => 'btn btn-primary']);
-    echo $OUTPUT->single_button($filtermanageurl, get_string('managefilters'), 'get',
-        ['class' => 'btn btn-secondary']);
+    echo html_writer::link($settingsurl, get_string('pluginsettings', 'filter_translations'),
+        ['class' => 'btn btn-primary mr-2 mb-2']);
+    echo html_writer::link($filtermanageurl, get_string('managefilters'), ['class' => 'btn btn-secondary mr-2 mb-2']);
 }
 if ($cansetupcoursefields) {
-    echo $OUTPUT->single_button($setupcoursefieldsurl, get_string('setupcoursefields', 'filter_translations'), 'get',
-        ['class' => 'btn btn-secondary']);
+    echo html_writer::link($setupcoursefieldsurl, get_string('setupcoursefields', 'filter_translations'),
+        ['class' => 'btn btn-secondary mr-2 mb-2']);
 }
 if ($canconfig) {
-    echo $OUTPUT->single_button($scheduledtasksurl, get_string('scheduledtasksheading', 'filter_translations'), 'get',
-        ['class' => 'btn btn-secondary']);
+    echo html_writer::link($scheduledtasksurl, get_string('scheduledtasksheading', 'filter_translations'),
+        ['class' => 'btn btn-secondary mr-2 mb-2']);
 }
 echo html_writer::end_div();
 
