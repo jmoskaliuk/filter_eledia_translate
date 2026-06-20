@@ -26,6 +26,11 @@
  * @return void
  */
 function xmldb_filter_translations_install() {
+    if (get_config('filter_translations', 'coursecontrolsource') === false) {
+        set_config('coursecontrolsource', \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE,
+            'filter_translations');
+    }
+
     try {
         \filter_translations\course_customfields::ensure();
     } catch (\Throwable $e) {

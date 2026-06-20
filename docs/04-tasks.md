@@ -108,7 +108,7 @@ Done-Checkliste
 
 Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten` (Code vorbereitet, es fehlt nur der Runtime-Lauf gegen moodle52).
 
-Letzter abgeschlossener Schritt: `task18 Behat-Regressionstests fuer UI-Workflows` (Feature-Dateien und DevFlow aktualisiert; Ausfuehrung haengt an passender PHP/Behat-Umgebung).
+Letzter abgeschlossener Schritt: `task19 Empfohlene Kurssteuerung als Default` (Custom Fields mit Tag-Fallback ist Default und Upgrade-Migration; Runtime-Ausfuehrung haengt an passender Moodle/PHP-Umgebung).
 
 ---
 
@@ -168,6 +168,36 @@ Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init`
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task19 Empfohlene Kurssteuerung als Default
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat06
+Prioritaet: P1
+Linked:    test12, test23
+
+**Ziel**
+Der empfohlene Steuerungsmodus soll standardmaessig `Course custom fields, then legacy tags` sein, damit Kursfelder fuehrend werden und bestehende Tag-Kurse weiter funktionieren.
+
+**Schritte**
+1. Runtime-Default in `course_translation_policy` auf `customfields_fallback_tags` setzen.
+2. Admin-Setting und Onboarding-Default anpassen.
+3. Install-/Upgrade-Pfad so erweitern, dass bestehende `tags`-Konfigurationen auf den Fallback-Modus migrieren.
+4. PHPUnit-Regressionstest und DevFlow aktualisieren.
+
+**Erwartetes Ergebnis**
+Neue Installationen und bestehende Upgrades verwenden Course Custom Fields zuerst und Legacy-Tags nur noch als Rueckfall.
+
+**Aktueller Stand**
+Implementiert mit Versionssprung `2026062000`. PHPUnit-Test erweitert; lokale Ausfuehrung bleibt wegen passender Moodle/PHP-Testumgebung offen.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test23 dokumentiert
+- [ ] PHPUnit-Lauf in PHP-8.4-/Moodle-Umgebung gruen
+- [ ] PO Sign-off
 
 ### task18 Behat-Regressionstests fuer UI-Workflows
 

@@ -401,6 +401,26 @@ Tags-, Custom-Fields- und Fallback-Steuerung sowie leere Sprachliste und Site-Ko
 **Beobachtetes Ergebnis**
 Test geschrieben (`tests/course_translation_policy_test.php`). Noch nicht ausgefuehrt (haengt an task02).
 
+### test23 Default-Kurssteuerung nutzt Custom Fields mit Tag-Fallback
+
+Feature:            feat06
+Akzeptanzkriterium: feat06.AC04
+Typ:                automatisiert PHPUnit
+Status:             pending
+Letzter Lauf:       -
+Linked:             task19
+
+**Schritte**
+1. `vendor/bin/phpunit filter/translations/tests/course_translation_policy_test.php --filter test_default_control_source_uses_customfields_with_tag_fallback`.
+2. Ohne gespeichertes `coursecontrolsource` pruefen, dass Tags als Fallback funktionieren.
+3. Danach ein Custom-Field-Policy-Signal setzen und pruefen, dass Custom Fields Tags uebersteuern.
+
+**Erwartetes Ergebnis**
+Der Default entspricht `customfields_fallback_tags`: Legacy-Tags halten bestehende Kurse aktiv, sobald Kursfelder gepflegt sind, sind sie fuehrend.
+
+**Beobachtetes Ergebnis**
+Test geschrieben (`tests/course_translation_policy_test.php`). Noch nicht ausgefuehrt (haengt an task02/PHP-8.4-Umgebung).
+
 ### test13 Glossary sync logic (PHPUnit)
 
 Feature:            feat07

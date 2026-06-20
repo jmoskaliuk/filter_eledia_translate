@@ -115,6 +115,8 @@ Konfigurierbare Quellen:
 - `customfields`: Moodle Course Custom Fields sind fuehrend.
 - `customfields_fallback_tags`: Course Custom Fields werden zuerst verwendet; wenn keine Policy-Werte vorhanden sind, greift Legacy-Tag-Verhalten.
 
+Der Runtime-Default ist `course_translation_policy::DEFAULT_CONTROL_SOURCE = customfields_fallback_tags`. Install- und Upgrade-Step `2026062000` setzen diesen Modus fuer neue Installationen und migrieren bestehende `tags`-Konfigurationen auf den Fallback-Modus.
+
 Default-Custom-Field-Shortnames:
 
 - `eledia_translate_enabled`: Checkbox oder bool-artiges Feld fuer Kursuebersetzung aktiv.
@@ -257,7 +259,7 @@ Implementiert ueber `classes/course_translation_policy.php`, Admin-Settings in `
 
 Die Implementierung nutzt Moodle Course Custom Fields ueber die Tabellen `customfield_category`, `customfield_field` und `customfield_data`, weil diese Felder bereits im Moodle-Kursformular erscheinen und keine eigene Kursformular-Erweiterung noetig ist.
 
-`classes/course_customfields.php` legt die empfohlenen Course Custom Fields ueber `core_course\customfield\course_handler` idempotent an. Der Helper wird ueber `setupcoursefields.php`, `db/install.php` und den Upgrade-Step `2026052300` genutzt.
+`classes/course_customfields.php` legt die empfohlenen Course Custom Fields ueber `core_course\customfield\course_handler` idempotent an. Der Helper wird ueber `setupcoursefields.php`, `db/install.php` und die Upgrade-Steps `2026052300` und `2026062000` genutzt.
 
 ### Glossary management baseline (`feat07`)
 

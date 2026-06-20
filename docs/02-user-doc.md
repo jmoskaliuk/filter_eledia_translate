@@ -152,7 +152,7 @@ Uebersetzungsdaten und Translation Hashes koennen kontrolliert gepflegt oder ueb
 ### Course-level translation control (`feat06`)
 
 **Was tut es?**
-Administratoren koennen festlegen, ob die Uebersetzung eines Kurses weiterhin ueber Kurs-Tags oder ueber Moodle Course Custom Fields gesteuert wird.
+Administratoren koennen festlegen, ob die Uebersetzung eines Kurses ueber Moodle Course Custom Fields, ueber Legacy-Kurs-Tags oder ueber beides gesteuert wird.
 
 **Wann nutze ich es?**
 Wenn die Uebersetzungssteuerung sichtbar in den Kurseinstellungen gepflegt werden soll und Tags nicht mehr die einzige Steuerungsquelle sein sollen.
@@ -164,7 +164,7 @@ Wenn die Uebersetzungssteuerung sichtbar in den Kurseinstellungen gepflegt werde
    - Textfeld oder Textarea mit Shortname `eledia_translate_languages`
 2. Plugin-Einstellungen oeffnen.
 3. Bei Bedarf `Create course translation fields` ausfuehren, um die empfohlenen Kursfelder automatisch anzulegen.
-4. Unter `Course translation control` den Control Source waehlen.
+4. Unter `Course translation control` den Control Source pruefen. Empfohlen und voreingestellt ist `Course custom fields, then legacy tags`.
 5. Im Kurs das Aktivierungsfeld setzen.
 6. Optional Zielsprachen als Moodle-Sprachcodes eintragen, z. B. `de, fr, es`.
 
@@ -176,6 +176,7 @@ Der Kurs wird nur uebersetzt, wenn die Kurssteuerung ihn erlaubt. Zielsprachen k
 - Bleibt das Sprachfeld leer, sind alle Sprachen erlaubt.
 - Der Modus `Course custom fields, then legacy tags` schuetzt bestehende Kurse, die noch mit Tags wie `deepl` und Sprachcodes arbeiten.
 - Neue Installationen und Upgrades versuchen, die empfohlenen Kursfelder automatisch anzulegen.
+- Bestehende Installationen mit dem alten Modus `Legacy course tags only` werden beim Plugin-Upgrade auf den empfohlenen Fallback-Modus umgestellt.
 
 ---
 

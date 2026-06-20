@@ -206,6 +206,7 @@ Die Entscheidung, ob ein Kurs uebersetzt wird und welche Zielsprachen erlaubt si
 **Verhalten**
 
 - Administratoren waehlen global, ob Kurssteuerung ueber Legacy-Tags, Course Custom Fields oder Course Custom Fields mit Tag-Fallback erfolgt.
+- Der empfohlene und voreingestellte Modus ist `Course custom fields, then legacy tags`.
 - Bei Course Custom Fields aktiviert ein konfigurierbares Kursfeld die Uebersetzung.
 - Ein zweites konfigurierbares Kursfeld kann erlaubte Zielsprachen als Moodle-Sprachcodes enthalten.
 - Leeres Zielsprachenfeld bedeutet: alle Sprachen sind erlaubt, sofern die Kursuebersetzung aktiviert ist.
@@ -235,7 +236,6 @@ Die Entscheidung, ob ein Kurs uebersetzt wird und welche Zielsprachen erlaubt si
 
 **Non-Goals**
 
-- Das Plugin legt die Moodle Course Custom Fields noch nicht automatisch an.
 - Keine eigene Kurs-Konfigurationsseite ausserhalb des Moodle-Course-Custom-Fields-Systems.
 
 ---
@@ -388,7 +388,7 @@ Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Sett
 ### rel01 Current baseline
 
 - **Version:** `2.1.1-beta`
-- **Plugin version:** `2026061501`
+- **Plugin version:** `2026062000`
 - **Moodle requires:** `2022112814` / Moodle 4.1.13
 - **Maturity:** `MATURITY_BETA`
-- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Onboarding-Workflow, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, empfohlene Kurssteuerung mit Tag-Fallback, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Onboarding-Workflow, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.

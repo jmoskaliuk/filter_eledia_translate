@@ -119,7 +119,7 @@ if ($action === 'save' && confirm_sesskey()) {
         case 'course':
             $coursecontrolsource = required_param('coursecontrolsource', PARAM_RAW_TRIMMED);
             if (!in_array($coursecontrolsource, ['tags', 'customfields', 'customfields_fallback_tags'], true)) {
-                $coursecontrolsource = 'tags';
+                $coursecontrolsource = \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE;
             }
             set_config('coursecontrolsource', $coursecontrolsource, $component);
             set_config('coursetagenabled', required_param('coursetagenabled', PARAM_ALPHANUMEXT), $component);
@@ -209,7 +209,8 @@ switch ($step) {
         ];
         echo html_writer::start_div('form-group');
         echo html_writer::tag('label', get_string('coursecontrolsource', $component), ['for' => 'id_coursecontrolsource']);
-        echo html_writer::select($controloptions, 'coursecontrolsource', $setting('coursecontrolsource', 'tags'), false,
+        echo html_writer::select($controloptions, 'coursecontrolsource',
+            $setting('coursecontrolsource', \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE), false,
             ['id' => 'id_coursecontrolsource', 'class' => 'form-control']);
         echo html_writer::end_div();
         echo $textinput('coursetagenabled', get_string('coursetagenabled', $component),

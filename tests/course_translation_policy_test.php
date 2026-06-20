@@ -171,4 +171,29 @@ class course_translation_policy_test extends advanced_testcase {
         $this->assertTrue($policy->language_enabled('de'));
         $this->assertFalse($policy->language_enabled('es'));
     }
+
+    public function test_default_control_source_uses_customfields_with_tag_fallback(): void {
+        global $DB;
+
+        unset_config('coursecontrolsource', 'filter_translations');
+        set_config('coursetagenabled', 'deepl', 'filter_translations');
+        course_customfields::ensure();
+
+        $enabledfieldid = $DB->get_field('customfield_field', 'id', ['shortname' => 'eledia_translate_enabled']);
+        $this->assertNotEmpty($enabledfieldid);
+
+        $course = $this->getDataGenerator()->create_course();
+        $context = context_course::instance($course->id);
+
+        core_tag_tag::set_item_tags('core', 'course', $course->id, $context, ['deepl', 'de']);
+        $this->purge_policy_cache();
+        $policy = course_translation_policy::for_context($context);
+        $this->assertTrue($policy->translation_enabled());
+        $this->assertTrue($policy->language_enabled('de'));
+
+        $this->set_customfield_value($enabledfieldid, $course->id, '0', 0);
+
+        $this->purge_policy_cache();
+        $this->assertFalse(course_translation_policy::for_context($context)->translation_enabled());
+    }
 }

@@ -36,6 +36,9 @@ class course_translation_policy {
     /** Use course custom fields first, then fall back to tags. */
     public const CONTROL_CUSTOMFIELDS_FALLBACK_TAGS = 'customfields_fallback_tags';
 
+    /** Recommended default: course settings for new courses, tags for legacy courses. */
+    public const DEFAULT_CONTROL_SOURCE = self::CONTROL_CUSTOMFIELDS_FALLBACK_TAGS;
+
     /** @var int|null */
     private $courseid;
 
@@ -137,7 +140,7 @@ class course_translation_policy {
     private function control_source(): string {
         $source = get_config('filter_translations', 'coursecontrolsource');
         if (empty($source)) {
-            return self::CONTROL_TAGS;
+            return self::DEFAULT_CONTROL_SOURCE;
         }
 
         return $source;

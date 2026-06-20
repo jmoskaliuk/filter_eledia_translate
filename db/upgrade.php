@@ -408,5 +408,21 @@ function xmldb_filter_translations_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026061501, 'filter', 'translations');
     }
 
+    if ($oldversion < 2026062000) {
+        $source = get_config('filter_translations', 'coursecontrolsource');
+        if (empty($source) || $source === \filter_translations\course_translation_policy::CONTROL_TAGS) {
+            set_config('coursecontrolsource', \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE,
+                'filter_translations');
+        }
+
+        try {
+            \filter_translations\course_customfields::ensure();
+        } catch (\Throwable $e) {
+            debugging('Could not create filter_translations course custom fields: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        }
+
+        upgrade_plugin_savepoint(true, 2026062000, 'filter', 'translations');
+    }
+
     return true;
 }

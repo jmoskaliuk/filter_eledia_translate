@@ -105,7 +105,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('filter_translations/coursecontrolsource',
         get_string('coursecontrolsource', 'filter_translations'),
         get_string('coursecontrolsource_desc', 'filter_translations'),
-        'tags',
+        \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE,
         $controloptions));
 
     $settings->add(new admin_setting_configtext('filter_translations/coursetagenabled',
