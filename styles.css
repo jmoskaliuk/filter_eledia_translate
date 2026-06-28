@@ -86,3 +86,77 @@ pre.filter_translations_rawhtml {
     height:0;
     width: 0;
 }
+
+.filter-translations-dashboard {
+    max-width: var(--lh-page-max-wide, 88rem) !important;
+}
+
+.filter-translations-overview,
+.filter-translations-workflows {
+    margin-bottom: 1rem;
+}
+
+.filter-translations-panel {
+    min-height: 100%;
+}
+
+.filter-translations-kv {
+    display: grid;
+    gap: 0;
+    margin: 0;
+}
+
+.filter-translations-kv__row {
+    align-items: start;
+    border-top: 1px solid var(--lh-border-light, #f0f0f0);
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(10rem, 1fr) minmax(6rem, auto);
+    min-height: 2.05rem;
+    padding: 0.45rem 0;
+}
+
+.filter-translations-kv__row:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.filter-translations-kv dt {
+    color: var(--lh-text-secondary, #5f6b77);
+    font-weight: 650;
+    margin: 0;
+}
+
+.filter-translations-kv dd {
+    color: var(--lh-text, #1f2937);
+    font-weight: 750;
+    margin: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
+.filter-translations-section-title {
+    color: var(--lh-text, #1f2937);
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0.35rem 0 0.85rem;
+}
+
+.filter-translations-workflow-card {
+    min-height: 9.5rem;
+}
+
+.filter-translations-workflow-card .lh-plugin-card__body {
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .filter-translations-kv__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.15rem;
+    }
+
+    .filter-translations-kv dd {
+        text-align: left;
+    }
+}
