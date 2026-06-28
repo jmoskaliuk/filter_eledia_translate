@@ -1,0 +1,395 @@
+# Features
+
+## Meta
+
+Dieses Dokument definiert, was das Plugin tun soll.
+
+Es enthaelt:
+
+- Feature-Definitionen (`featXX`)
+- gewuenschtes Verhalten
+- Akzeptanzkriterien
+- Non-Goals
+- Releases (`relXX`)
+
+Quelle der Wahrheit fuer gewuenschtes Verhalten.
+
+---
+
+## Produkt-Uebersicht
+
+### Zweck
+
+`filter_translations` ermoeglicht, nutzergenerierte Moodle-Inhalte in andere Sprachen zu uebertragen, ohne den Ursprungstext pro Sprache duplizieren zu muessen.
+
+### Kernkonzepte
+
+- **Translation Hash:** MD5-basierter Schluessel, der Quellinhalt und Uebersetzungen verbindet.
+- **Translation Span:** HTML-Element mit `data-translationhash`, das Inhalte stabil referenzierbar macht.
+- **Manual Translation:** Von berechtigten Nutzern gepflegte Uebersetzung.
+- **Automatic Translation:** Uebersetzung durch Reverse-Language-String-Lookup oder DeepL.
+- **Translation Issue:** Protokollierter Hinweis auf fehlende oder veraltete Uebersetzung.
+
+### Constraints
+
+- Das Plugin laeuft innerhalb von Moodle und folgt Moodle-Filter-, Capability-, Cache-, Task- und Persistent-APIs.
+- Automatische Provider duerfen nur genutzt werden, wenn sie explizit konfiguriert sind.
+- Bulk-Skripte und Scheduled Tasks koennen gespeicherte Inhalte veraendern und muessen vorsichtig eingesetzt werden.
+
+---
+
+## Features
+
+### feat01 Content translations filter
+
+**Ziel**
+Moodle-Inhalte werden beim Rendern in die bevorzugte Sprache des Nutzers uebersetzt, wenn eine passende Uebersetzung vorhanden ist.
+
+**Verhalten**
+
+- Das Plugin priorisiert die Sprache des Nutzers und passende Parent-Sprachen.
+- Es sucht Uebersetzungen ueber `data-translationhash`, generierten Inhaltshash und `lastgeneratedhash`.
+- Bei Moodle-String-Rendering (`format_string()`) nutzt das Plugin fuer die Hash-Ermittlung eine normalisierte Fassung, damit Aktivitaetstitel mit HTML-Entities wie `&amp;` zu den exportierten Rohwerten passen.
+- Cache-Eintraege unterscheiden zwischen eingebettetem `data-translationhash` und generiertem Hash, damit Hash-basierte Uebersetzungen nicht versehentlich fuer gleichlautenden Klartext ohne Hash wiederverwendet werden.
+- Stale automatische Uebersetzungen werden nicht wiederverwendet.
+- Spracheigennamen werden nicht uebersetzt.
+
+**Akzeptanzkriterien**
+
+- `feat01.AC01`
+  Given: Eine deutsche Uebersetzung existiert fuer den gefundenen Hash.
+  When: Ein Nutzer mit Sprache `de` den Inhalt oeffnet.
+  Then: Der deutsche Ersatztext wird gerendert.
+
+- `feat01.AC02`
+  Given: Nur eine stale automatische Uebersetzung existiert.
+  When: Der Quelltext geaendert wurde.
+  Then: Die stale automatische Uebersetzung wird nicht als finaler Ersatz verwendet.
+
+**Non-Goals**
+
+- Kein Live-Editing im Filter selbst.
+- Keine Garantie, dass automatische Provider verfuegbar oder kostenfrei sind.
+
+---
+
+### feat02 Translator editing UI
+
+**Ziel**
+Berechtigte Nutzer koennen Uebersetzungen im Moodle-Kontext finden, bearbeiten und verwalten.
+
+**Verhalten**
+
+- Nutzer mit `filter/translations:edittranslations` sehen eine Uebersetzeransicht.
+- Translatierbare Inhalte erhalten ein Bearbeitungssymbol.
+- Verwaltungsseiten listen Uebersetzungen und ermoeglichen Bearbeitung, Import und Export.
+
+**Akzeptanzkriterien**
+
+- `feat02.AC01`
+  Given: Ein Nutzer hat die Edit-Capability.
+  When: Er die Uebersetzeransicht aktiviert.
+  Then: Bearbeitungsicons erscheinen neben translatierbaren Inhalten.
+
+- `feat02.AC02`
+  Given: Eine bestehende Uebersetzung.
+  When: Ein berechtigter Nutzer sie bearbeitet und speichert.
+  Then: Die neue Uebersetzung wird beim naechsten Rendering verwendet.
+
+---
+
+### feat03 Translation issue logging
+
+**Ziel**
+Fehlende und veraltete Uebersetzungen koennen fuer redaktionelle Nacharbeit protokolliert werden.
+
+**Verhalten**
+
+- Missing- und stale-Issues werden nur geloggt, wenn die entsprechenden Einstellungen aktiv sind.
+- Logging respektiert ausgeschlossene Sprachen.
+- `logdebounce` verhindert wiederholte identische Eintraege in kurzer Zeit.
+- Alte Issues koennen per Scheduled Task bereinigt werden.
+
+**Akzeptanzkriterien**
+
+- `feat03.AC01`
+  Given: `logmissing` ist aktiv und keine Uebersetzung existiert.
+  When: Der Inhalt in einer nicht ausgeschlossenen Sprache gerendert wird.
+  Then: Ein Missing-Issue wird gespeichert.
+
+- `feat03.AC02`
+  Given: Ein identisches Issue wurde kuerzlich geloggt.
+  When: Der Inhalt erneut gerendert wird.
+  Then: Es entsteht kein Duplikat innerhalb des Debounce-Fensters.
+
+---
+
+### feat04 Automatic translation providers
+
+**Ziel**
+Das Plugin kann fehlende Uebersetzungen optional ueber DeepL automatisch erzeugen oder aktualisieren.
+
+**Verhalten**
+
+- Reverse Language String Lookup wird zuerst versucht.
+- DeepL wird genutzt, wenn `deepl_enable` aktiv ist.
+- DeepL-Anfragen pruefen HTTP-Status und API-Fehler robust.
+- DeepL kann optional HTML Tag Handling, Source Language und Glossary ID verwenden.
+- Administratoren koennen die DeepL-Konfiguration ueber eine Testseite pruefen.
+- Provider-Fehler koennen Backoff-Verhalten ausloesen, wenn konfiguriert.
+
+**Akzeptanzkriterien**
+
+- `feat04.AC01`
+  Given: Reverse Lookup findet eine passende Moodle-Sprachzeichenkette.
+  When: Eine Uebersetzung fehlt.
+  Then: Die Uebersetzung wird aus der Sprachzeichenkette erstellt.
+
+- `feat04.AC02`
+  Given: DeepL ist aktiv.
+  When: Reverse Lookup keine Uebersetzung findet.
+  Then: DeepL wird als automatischer Provider versucht.
+
+- `feat04.AC03`
+  Given: DeepL liefert einen API- oder HTTP-Fehler.
+  When: Backoff aktiviert ist.
+  Then: DeepL wird temporaer pausiert und der Filter rendert ohne Fatal Error weiter.
+
+- `feat04.AC04`
+  Given: Eine DeepL Glossary ID ist konfiguriert.
+  When: Eine Source Language fuer die Anfrage bekannt ist.
+  Then: Die Anfrage enthaelt `glossary_id` und `source_lang`.
+
+**Non-Goals**
+
+- Keine Provider-Konfiguration ausserhalb von Moodle.
+- Kein paralleler Multi-Provider-Abgleich.
+- Google Translate ist keine aktive Provider-Option.
+
+---
+
+### feat05 Bulk maintenance, import and export
+
+**Ziel**
+Administratoren koennen bestehende Inhalte und Uebersetzungen migrieren, bereinigen, importieren und exportieren.
+
+**Verhalten**
+
+- CLI-Skripte unter `cli/` unterstuetzen Migration, Span-Insertion, Hash-Bereinigung und Kopieren von Uebersetzungen.
+- Scheduled Tasks koennen ausgewaehlte Bulk-Operationen wiederkehrend ausfuehren.
+- Import- und Exportseiten unterstuetzen Uebersetzungsdaten-Transfer.
+
+**Akzeptanzkriterien**
+
+- `feat05.AC01`
+  Given: Ein Administrator ruft ein CLI-Skript mit `--help` auf.
+  When: Das Skript startet.
+  Then: Es zeigt eine nutzbare Hilfe statt ungefragt Daten zu veraendern.
+
+- `feat05.AC02`
+  Given: Uebersetzungsdaten sollen zwischen Umgebungen bewegt werden.
+  When: Export und Import genutzt werden.
+  Then: Uebersetzungen koennen nachvollziehbar uebertragen werden.
+
+**Non-Goals**
+
+- Bulk-Operationen sind kein Ersatz fuer ein Backup.
+- Keine automatische Produktionsausfuehrung ohne explizite Admin-Konfiguration.
+
+---
+
+### feat06 Course-level translation control
+
+**Ziel**
+Die Entscheidung, ob ein Kurs uebersetzt wird und welche Zielsprachen erlaubt sind, soll ueber Moodle-Kurseinstellungen steuerbar sein statt ausschliesslich ueber hart codierte Kurs-Tags.
+
+**Verhalten**
+
+- Administratoren waehlen global, ob Kurssteuerung ueber Legacy-Tags, Course Custom Fields oder Course Custom Fields mit Tag-Fallback erfolgt.
+- Der empfohlene und voreingestellte Modus ist `Course custom fields, then legacy tags`.
+- Bei Course Custom Fields aktiviert ein konfigurierbares Kursfeld die Uebersetzung.
+- Ein zweites konfigurierbares Kursfeld kann erlaubte Zielsprachen als Moodle-Sprachauswahl enthalten.
+- Der Setup-Helper erzeugt das Sprachfeld als `customfield_languageselect` mit Autocomplete-Multiselect, damit Redakteure verfuegbare Moodle-Sprachen auswaehlen statt Codes in ein Textfeld einzutragen.
+- Leeres Zielsprachenfeld bedeutet: alle Sprachen sind erlaubt, sofern die Kursuebersetzung aktiviert ist.
+- Legacy-Tags bleiben als Fallback verfuegbar, damit bestehende Kurse weiter funktionieren.
+
+**Akzeptanzkriterien**
+
+- `feat06.AC01`
+  Given: Der Control Source ist `Course custom fields`.
+  When: Das Aktivierungsfeld im Kurs nicht gesetzt ist.
+  Then: Der Filter uebersetzt Kursinhalte nicht automatisch.
+
+- `feat06.AC02`
+  Given: Das Aktivierungsfeld ist gesetzt und das Sprachfeld enthaelt `de, fr`.
+  When: Ein Nutzer den Kurs mit Sprache `de` oeffnet.
+  Then: Der Filter darf Uebersetzungen fuer `de` verwenden.
+
+- `feat06.AC03`
+  Given: Das Aktivierungsfeld ist gesetzt und das Sprachfeld enthaelt `de, fr`.
+  When: Ein Nutzer den Kurs mit Sprache `es` oeffnet.
+  Then: Der Filter uebersetzt fuer `es` nicht.
+
+- `feat06.AC04`
+  Given: Der Control Source ist `Course custom fields, then legacy tags`.
+  When: Der Kurs keine passenden Custom Field Werte besitzt.
+  Then: Die bisherige Tag-Steuerung wird als Fallback verwendet.
+
+**Non-Goals**
+
+- Keine eigene Kurs-Konfigurationsseite ausserhalb des Moodle-Course-Custom-Fields-Systems.
+
+---
+
+### feat07 Glossary management baseline
+
+**Ziel**
+Terminologie soll als eigenes Glossar gepflegt werden koennen, statt nur indirekt ueber vollstaendige Uebersetzungsdatensaetze.
+
+**Verhalten**
+
+- Glossarbegriffe werden getrennt von normalen Inhaltsuebersetzungen modelliert.
+- Glossare koennen global oder kursbezogen gepflegt werden.
+- Begriffe haben Sprachrichtung, Status, Prioritaet und optionale Review-Information.
+- Administratoren koennen Glossarbegriffe ueber eine Management-Seite filtern, anlegen und bearbeiten.
+- Die Glossarverwaltung nutzt Moodle-Paginierung fuer groessere Eintragslisten.
+- Administratoren koennen gefilterte Glossarlisten als CSV exportieren und CSV-Dateien importieren.
+- Beim Import werden bestehende Begriffe gleicher Quellphrase, Sprachrichtung und gleichem Scope aktualisiert; vorhandene Dubletten werden ohne Runtime-Notice gemeinsam aktualisiert.
+- Freigegebene Glossare koennen kontrolliert mit DeepL Glossaries synchronisiert werden.
+- Fuer DeepL-Sync wird die v3 Glossary API vorgesehen, damit ein Glossar mehrere Sprachpaare als Dictionaries enthalten kann.
+
+**Akzeptanzkriterien**
+
+- `feat07.AC01`
+  Given: Ein Glossarbegriff ist freigegeben.
+  When: Eine automatische DeepL-Uebersetzung fuer dieselbe Sprachrichtung erzeugt wird.
+  Then: Der Begriff kann fuer DeepL-Glossary-Nutzung vorbereitet werden.
+
+- `feat07.AC02`
+  Given: Redaktion pflegt Terminologie.
+  When: Sie die Glossarverwaltung oeffnet.
+  Then: Sie kann nach Begriff, Sprache, Kurs/Kontext und Status filtern.
+
+- `feat07.AC03`
+  Given: Eine gepflegte Glossarliste existiert.
+  When: Administration die Liste als CSV exportiert oder eine CSV importiert.
+  Then: Glossarbegriffe koennen ausserhalb von Moodle gepflegt und kontrolliert zurueckgespielt werden.
+
+- `feat07.AC04`
+  Given: Glossarbegriffe sind freigegeben.
+  When: Ein DeepL-Sync geplant oder ausgefuehrt wird.
+  Then: Nur `approved` Eintraege werden pro Scope und Sprachpaar in DeepL-v3-Dictionaries ueberfuehrt.
+
+**Non-Goals**
+
+- Keine automatische DeepL-v3-Synchronisation ohne ausdruecklichen Admin-Start.
+- Kein Ersatz fuer die bestehende Inhaltsuebersetzungsverwaltung.
+
+---
+
+### feat08 Central setup dashboard
+
+**Ziel**
+Administration und Uebersetzungsmanagement sollen eine zentrale Startseite haben, weil Filter-Plugin-Einstellungen in Moodle sonst schwer auffindbar sind.
+
+**Verhalten**
+
+- Eine neue Seite `filter/translations/index.php` buendelt Status, Konfiguration und Workflows.
+- Die Seite zeigt Kennzahlen fuer Uebersetzungen, Translation Issues, Glossarbegriffe und ausstehende Glossar-Sync-Gruppen.
+- Sie verlinkt Plugin-Settings, Filterverwaltung, Kursfeld-Setup, Scheduled Tasks, DeepL-Test und operative Workflows.
+- Sichtbare Aktionen respektieren Capabilities; reine Uebersetzungsmanager sehen keine Admin-only Buttons.
+- Die Seite ist als eigener Admin-Navigationspunkt unter den Filter-Einstellungen registriert und von der bisherigen Settings-Seite verlinkt.
+
+**Akzeptanzkriterien**
+
+- `feat08.AC01`
+  Given: Ein Administrator oeffnet die Plugin-Konfiguration.
+  When: Er die Setup-Seite nutzt.
+  Then: Er findet die wichtigsten Einstellungen, Statusinformationen und Verwaltungsseiten an einem Ort.
+
+- `feat08.AC02`
+  Given: Ein Nutzer hat nur Uebersetzungsrechte.
+  When: Er die Setup-Seite oeffnet.
+  Then: Operative Uebersetzungs- und Glossarworkflows sind sichtbar, Admin-only Aktionen nicht.
+
+**Non-Goals**
+
+- Keine doppelte Speicherung von Settings ausserhalb des Moodle-Admin-Settings-Frameworks.
+- Kein Ersatz fuer die bestehenden Detailseiten zur Uebersetzungs- und Glossarverwaltung.
+
+---
+
+### feat09 Expanded activity content export
+
+**Ziel**
+Der CSV-Export soll nicht nur Aktivitaetstitel und Intro-Texte erfassen, sondern weitere lehrrelevante Aktivitaetsinhalte fuer die Uebersetzung bereitstellen.
+
+**Verhalten**
+
+- Der Export erfasst zusaetzlich zu vorhandenen Bereichen Inhalte aus Assignment, Choice, Feedback, Glossary, Workshop und Question Bank.
+- Forum und Wiki bleiben bewusst ausserhalb des aktuellen Scopes.
+- H5P, SCORM und IMSCP-Paketinhalte werden nicht geparst.
+- Nutzerbeitraege wie Abgaben oder Workshop-Submissions werden nicht als redaktionelle Kursinhalte exportiert.
+
+**Akzeptanzkriterien**
+
+- `feat09.AC01`
+  Given: Ein Kurs enthaelt Choice-Optionen, Feedback-Fragen oder Glossar-Eintraege.
+  When: Ein Admin fehlende Uebersetzungen exportiert.
+  Then: Diese redaktionellen Inhalte erscheinen im CSV, sofern noch keine passende Uebersetzung existiert.
+
+- `feat09.AC02`
+  Given: Eine Frage besitzt keine eingebetteten Translation Spans.
+  When: Die Question Bank exportiert wird.
+  Then: Fragetext, Feedback, Antworten und Hints werden trotzdem ueber generierte Hashes exportiert.
+
+**Non-Goals**
+
+- Keine Uebersetzung von Forum- und Wiki-Inhalten in dieser Iteration.
+- Keine Extraktion interner Paketdaten aus H5P, SCORM oder IMSCP.
+
+---
+
+### feat10 Setup onboarding workflow
+
+**Ziel**
+Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Settings springen muessen, sondern schrittweise durch die zentralen Konfigurationsbereiche gefuehrt werden.
+
+**Verhalten**
+
+- Eine eigene Seite `filter/translations/onboarding.php` fuehrt durch Filterstatus, Kurssteuerung, automatische Provider, Logging und Glossarverwaltung.
+- Der Filter-Schritt kann den Filter global aktivieren und auf `Content and headings` stellen.
+- Der Kurs-Schritt pflegt Control Source, Legacy-Tag und Course-Custom-Field-Shortnames und verlinkt die automatische Kursfeldanlage.
+- Der Provider-Schritt pflegt Reverse Lookup, DeepL-Aktivierung, API-Endpunkt, API-Key, Backoff, Source Language, HTML Tag Handling und Glossary ID.
+- Der Logging-Schritt pflegt Missing-/Stale-/History-Logging, Debounce und ausgeschlossene Seiten.
+- Der Glossar-Schritt verlinkt Glossarverwaltung, Import, Export und DeepL-Sync.
+- Der Abschluss zeigt Setup-Checks fuer Filter, Headings, Kurssteuerung, Provider und DeepL-Glossary-Source-Language.
+
+**Akzeptanzkriterien**
+
+- `feat10.AC01`
+  Given: Ein Administrator oeffnet die Plugin-Konfiguration.
+  When: Er den Onboarding-Workflow startet.
+  Then: Er wird schrittweise durch alle wesentlichen Erstkonfigurationen gefuehrt.
+
+- `feat10.AC02`
+  Given: Der Administrator speichert den Filter-Schritt mit Headings aktiv.
+  When: Moodle Filterstatus und String-Anwendung ausliest.
+  Then: Der Filter ist global aktiv und fuer Inhalt plus Ueberschriften konfiguriert.
+
+**Non-Goals**
+
+- Kein neuer Ersatz fuer alle Moodle-Admin-Settings; Detailkonfiguration bleibt weiterhin in den bestehenden Settings erreichbar.
+- Keine Speicherung von DeepL-Testresultaten im Onboarding.
+
+---
+
+## Releases
+
+### rel01 Current baseline
+
+- **Version:** `2.1.2-beta`
+- **Plugin version:** `2026062302`
+- **Moodle requires:** `2022112814` / Moodle 4.1.13
+- **Maturity:** `MATURITY_BETA`
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, empfohlene Kurssteuerung mit Tag-Fallback, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Onboarding-Workflow, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.

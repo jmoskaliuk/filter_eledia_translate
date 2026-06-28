@@ -1,0 +1,43 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Install hooks for filter_translations.
+ *
+ * @package filter_translations
+ */
+
+/**
+ * Plugin install hook.
+ *
+ * @return void
+ */
+function xmldb_filter_translations_install() {
+    if (get_config('filter_translations', 'coursecontrolsource') === false) {
+        set_config('coursecontrolsource', \filter_translations\course_translation_policy::DEFAULT_CONTROL_SOURCE,
+            'filter_translations');
+    }
+
+    if (empty(get_config('filter_translations', 'columndefinition'))) {
+        set_config('columndefinition', \filter_translations\column_definition::default_json(), 'filter_translations');
+    }
+
+    try {
+        \filter_translations\course_customfields::ensure();
+    } catch (\Throwable $e) {
+        debugging('Could not create filter_translations course custom fields: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    }
+}
