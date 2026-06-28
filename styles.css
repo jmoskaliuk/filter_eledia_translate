@@ -96,6 +96,41 @@ pre.filter_translations_rawhtml {
     margin-bottom: 1rem;
 }
 
+.filter-translations-start-card {
+    align-items: flex-start;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: var(--lh-radius-sm, 8px);
+    color: #7c2d12;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    justify-content: space-between;
+    margin: 0 0 1rem;
+    padding: 0.85rem 1rem;
+}
+
+.filter-translations-start-card__copy {
+    display: flex;
+    flex: 1 1 30rem;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    min-width: 0;
+}
+
+.filter-translations-start-card__title {
+    color: var(--lh-text, #1f2937);
+    font-weight: 800;
+}
+
+.filter-translations-start-card__text {
+    color: var(--lh-text-secondary, #5f6b77);
+}
+
+.filter-translations-start-card__button {
+    flex: 0 0 auto;
+}
+
 .filter-translations-panel {
     min-height: 100%;
 }
@@ -150,6 +185,61 @@ pre.filter_translations_rawhtml {
     margin-bottom: 0;
 }
 
+.filter-translations-wizard .lh-plugin-section-nav {
+    border: 1px solid var(--lh-border, #dbe7ee);
+    border-radius: var(--lh-radius-sm, 8px);
+    margin: 0 0 1rem;
+    padding-left: 0.35rem;
+}
+
+.filter-translations-wizard-card {
+    margin-bottom: 1rem;
+}
+
+.filter-translations-wizard-card .form-group,
+.filter-translations-wizard-card .form-check {
+    margin-bottom: 1rem;
+}
+
+.filter-translations-wizard-card label {
+    color: var(--lh-text-secondary, #5f6b77);
+    font-weight: 750;
+}
+
+.filter-translations-wizard-card .form-control {
+    border-color: var(--lh-border, #dbe7ee);
+    border-radius: var(--lh-radius-sm, 8px);
+}
+
+.filter-translations-wizard-card .form-text {
+    color: var(--lh-muted, #5f6b77);
+}
+
+.filter-translations-wizard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.filter-translations-check-list {
+    display: grid;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+}
+
+.filter-translations-check-list__item {
+    align-items: center;
+    border: 1px solid var(--lh-border-light, #f0f0f0);
+    border-radius: var(--lh-radius-sm, 8px);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    padding: 0.65rem 0.75rem;
+}
+
 @media (max-width: 640px) {
     .filter-translations-kv__row {
         grid-template-columns: minmax(0, 1fr);
@@ -158,5 +248,9 @@ pre.filter_translations_rawhtml {
 
     .filter-translations-kv dd {
         text-align: left;
+    }
+
+    .filter-translations-start-card__button {
+        width: 100%;
     }
 }

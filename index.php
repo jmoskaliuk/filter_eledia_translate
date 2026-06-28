@@ -183,14 +183,6 @@ $shellheader = [
     'name' => get_string('pluginname', 'filter_translations'),
     'tagline' => get_string('shell_tagline', 'filter_translations'),
     'subtitle' => get_string('pluginsetup_desc', 'filter_translations'),
-    'ctas' => $canconfig ? [
-        [
-            'modifier' => 'open',
-            'url' => $onboardingurl->out(false),
-            'label' => get_string('onboardingtitle', 'filter_translations'),
-            'fa' => 'fa-check-square',
-        ],
-    ] : [],
     'createurl' => (new moodle_url('/filter/translations/editglossaryentry.php',
         ['returnurl' => (new moodle_url('/filter/translations/index.php'))->out(false)]))->out(false),
     'createlabel' => get_string('createglossaryentry', 'filter_translations'),
@@ -249,6 +241,21 @@ $renderkv = static function(array $rows): string {
     $html .= html_writer::end_tag('dl');
     return $html;
 };
+
+if ($canconfig) {
+    echo html_writer::tag('section',
+        html_writer::tag('div',
+            html_writer::tag('strong', get_string('onboardingstart_title', 'filter_translations'),
+                ['class' => 'filter-translations-start-card__title']) .
+            html_writer::span(get_string('onboardingstart_desc', 'filter_translations'),
+                'filter-translations-start-card__text'),
+            ['class' => 'filter-translations-start-card__copy']
+        ) .
+        html_writer::link($onboardingurl, get_string('onboardingstart_button', 'filter_translations'),
+            ['class' => 'lh-btn-outline filter-translations-start-card__button']),
+        ['class' => 'filter-translations-start-card']
+    );
+}
 
 $configrows = [
     [get_string('filtername', 'filter_translations'), $filterenabled ? $statusyes : $statusno],

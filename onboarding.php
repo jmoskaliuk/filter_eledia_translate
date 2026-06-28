@@ -169,21 +169,36 @@ $PAGE->requires->css(new moodle_url('/local/lernhive/styles.css'));
 echo $OUTPUT->header();
 shell::open(get_string('onboardingtitle', $component),
     get_string('pluginsetup_desc', $component), plugin_page::MODIFIER_READING);
-echo html_writer::tag('p', get_string('onboardingintro', $component), ['class' => 'lead']);
+echo html_writer::start_div('filter-translations-wizard');
+echo html_writer::tag('p', get_string('onboardingintro', $component), ['class' => 'lh-plugin-card__body']);
 if ($saved) {
     echo $OUTPUT->notification(get_string('changessaved'), \core\output\notification::NOTIFY_SUCCESS);
 }
 
-echo html_writer::start_div('mb-4 d-flex flex-wrap');
+echo html_writer::start_tag('nav', [
+    'class' => 'lh-plugin-section-nav',
+    'aria-label' => get_string('onboardingtitle', $component),
+]);
 foreach ($steps as $key => $label) {
-    $class = $key === $step ? 'btn btn-primary mr-2 mb-2' : 'btn btn-secondary mr-2 mb-2';
-    echo html_writer::link(new moodle_url($baseurl, ['step' => $key]), $label, ['class' => $class]);
+    $attributes = ['class' => 'lh-plugin-section-nav__item'];
+    if ($key === $step) {
+        $attributes['aria-current'] = 'page';
+    }
+    echo html_writer::link(new moodle_url($baseurl, ['step' => $key]), $label, $attributes);
 }
-echo html_writer::end_div();
+echo html_writer::end_tag('nav');
 
-echo html_writer::start_div('card');
-echo html_writer::tag('h2', $steps[$step], ['class' => 'h4 card-header']);
-echo html_writer::start_div('card-body');
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-wizard-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-check-square', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', $steps[$step], ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body');
 
 $formstart = function() use ($baseurl, $step): string {
     $actionurl = new moodle_url($baseurl, ['step' => $step]);
@@ -192,7 +207,11 @@ $formstart = function() use ($baseurl, $step): string {
         html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'action', 'value' => 'save']);
 };
 $formend = function() use ($component): string {
-    return html_writer::tag('button', get_string('saveandcontinue', $component), ['type' => 'submit', 'class' => 'btn btn-primary']) .
+    return html_writer::tag('div',
+            html_writer::tag('button', get_string('saveandcontinue', $component),
+                ['type' => 'submit', 'class' => 'lh-btn-open']),
+            ['class' => 'filter-translations-wizard-actions']
+        ) .
         html_writer::end_tag('form');
 };
 
@@ -228,9 +247,9 @@ switch ($step) {
             $setting('coursefieldenabled', 'eledia_translate_enabled'));
         echo $textinput('coursefieldlanguages', get_string('coursefieldlanguages', $component),
             $setting('coursefieldlanguages', 'eledia_translate_languages'));
-        echo html_writer::start_div('mb-3');
+        echo html_writer::start_div('filter-translations-wizard-actions');
         echo html_writer::link(new moodle_url('/filter/translations/setupcoursefields.php', ['sesskey' => sesskey()]),
-            get_string('setupcoursefields', $component), ['class' => 'btn btn-secondary']);
+            get_string('setupcoursefields', $component), ['class' => 'lh-btn-outline']);
         echo html_writer::end_div();
         echo $formend();
         break;
@@ -253,9 +272,9 @@ switch ($step) {
             get_string('deepl_taghandlinghtml', $component), get_string('deepl_taghandlinghtml_desc', $component));
         echo $textinput('deepl_glossaryid', get_string('deepl_glossaryid', $component),
             $setting('deepl_glossaryid', ''), 'text', get_string('deepl_glossaryid_desc', $component));
-        echo html_writer::start_div('mb-3');
+        echo html_writer::start_div('filter-translations-wizard-actions');
         echo html_writer::link(new moodle_url('/filter/translations/testdeepl.php', ['sesskey' => sesskey()]),
-            get_string('deepltest', $component), ['class' => 'btn btn-secondary']);
+            get_string('deepltest', $component), ['class' => 'lh-btn-outline']);
         echo html_writer::end_div();
         echo $formend();
         break;
@@ -276,17 +295,17 @@ switch ($step) {
 
     case 'glossary':
         echo html_writer::tag('p', get_string('onboardingglossary_desc', $component));
-        echo html_writer::start_div('d-flex flex-wrap');
+        echo html_writer::start_div('filter-translations-wizard-actions');
         echo html_writer::link(new moodle_url('/filter/translations/manageglossary.php'),
-            get_string('manageglossary', $component), ['class' => 'btn btn-primary mr-2 mb-2']);
+            get_string('manageglossary', $component), ['class' => 'lh-btn-open']);
         echo html_writer::link(new moodle_url('/filter/translations/glossaryimport.php'),
-            get_string('importglossary', $component), ['class' => 'btn btn-secondary mr-2 mb-2']);
+            get_string('importglossary', $component), ['class' => 'lh-btn-outline']);
         echo html_writer::link(new moodle_url('/filter/translations/glossaryexport.php'),
-            get_string('exportglossary', $component), ['class' => 'btn btn-secondary mr-2 mb-2']);
+            get_string('exportglossary', $component), ['class' => 'lh-btn-outline']);
         echo html_writer::link(new moodle_url('/filter/translations/manageglossarysync.php'),
-            get_string('deeplglossarysync', $component), ['class' => 'btn btn-secondary mr-2 mb-2']);
+            get_string('deeplglossarysync', $component), ['class' => 'lh-btn-outline']);
         echo html_writer::link(new moodle_url($baseurl, ['step' => 'finish', 'saved' => 1]),
-            get_string('continue'), ['class' => 'btn btn-primary mr-2 mb-2']);
+            get_string('continue'), ['class' => 'lh-btn-open']);
         echo html_writer::end_div();
         break;
 
@@ -301,21 +320,22 @@ switch ($step) {
             get_string('onboardingcheck_deeplsource', $component) => empty($setting('deepl_glossaryid', '')) ||
                 !empty($setting('deepl_sourcelang', '')),
         ];
-        echo html_writer::start_tag('ul', ['class' => 'list-group mb-3']);
+        echo html_writer::start_tag('ul', ['class' => 'filter-translations-check-list']);
         foreach ($checks as $label => $ok) {
             $badge = $ok ? get_string('yes') : get_string('no');
-            $class = $ok ? 'badge badge-success' : 'badge badge-warning';
+            $class = $ok ? 'lh-plugin-tag lh-plugin-tag--active' : 'lh-plugin-tag lh-plugin-tag--warning';
             echo html_writer::tag('li',
-                s($label) . html_writer::span($badge, $class . ' float-right'),
-                ['class' => 'list-group-item']);
+                html_writer::span(s($label)) . html_writer::span($badge, $class),
+                ['class' => 'filter-translations-check-list__item']);
         }
         echo html_writer::end_tag('ul');
         echo html_writer::link(new moodle_url('/filter/translations/index.php'), get_string('pluginsetup', $component),
-            ['class' => 'btn btn-primary']);
+            ['class' => 'lh-btn-open']);
         break;
 }
 
 echo html_writer::end_div();
+echo html_writer::end_tag('section');
 echo html_writer::end_div();
 shell::close();
 echo $OUTPUT->footer();
