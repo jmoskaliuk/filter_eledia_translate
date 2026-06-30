@@ -25,6 +25,7 @@
 
 use filter_translations\managetranslationissues_filterform;
 use filter_translations\managetranslationissues_table;
+use filter_translations\output\shell;
 
 require_once(dirname(__FILE__) . '/../../config.php');
 
@@ -55,7 +56,7 @@ if (isset($cm)) {
     $PAGE->set_course($course);
 }
 
-$title = get_string('managetranslationissues', 'filter_translations');
+$title = get_string('navproblems', 'filter_translations');
 $baseurl = new moodle_url('/filter/translations/managetranslationissues.php');
 
 $form = new managetranslationissues_filterform();
@@ -97,13 +98,45 @@ if ($download) {
     $table->download($download);
 } else {
     // Only print headers if not asked to download data.
+    $PAGE->set_pagelayout('standard');
     $PAGE->set_title($title);
-    $PAGE->set_heading($title);
+    $PAGE->set_heading('');
+    shell::require_css();
     echo $OUTPUT->header();
+    shell::open($title, get_string('dashboardissues_desc', 'filter_translations'));
 
+    echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card filter-translations-filter-card']);
+    echo html_writer::tag('div',
+        html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-filter', 'aria-hidden' => 'true']),
+            'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+        html_writer::tag('div',
+            html_writer::tag('h2', get_string('filteroptions', 'filter_translations'),
+                ['class' => 'lh-plugin-card__title']),
+            ['class' => 'lh-plugin-card__meta']
+        ),
+        ['class' => 'lh-plugin-card__top']
+    );
+    echo html_writer::start_div('lh-plugin-card__body filter-translations-form-card');
     echo $form->render();
+    echo html_writer::end_div();
+    echo html_writer::end_tag('section');
 
+    echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+    echo html_writer::tag('div',
+        html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-exclamation-triangle', 'aria-hidden' => 'true']),
+            'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+        html_writer::tag('div',
+            html_writer::tag('h2', get_string('navproblems', 'filter_translations'),
+                ['class' => 'lh-plugin-card__title']),
+            ['class' => 'lh-plugin-card__meta']
+        ),
+        ['class' => 'lh-plugin-card__top']
+    );
+    echo html_writer::start_div('lh-plugin-card__body filter-translations-table-card');
     $table->out(100, true);
+    echo html_writer::end_div();
+    echo html_writer::end_tag('section');
 
+    shell::close();
     echo $OUTPUT->footer();
 }

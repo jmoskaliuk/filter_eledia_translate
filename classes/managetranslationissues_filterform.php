@@ -44,8 +44,6 @@ class managetranslationissues_filterform extends \moodleform {
 
         $options = [0 => get_string('any')] + translation_issue::get_issue_types();
 
-        $mform->addElement('header', 'filteroptions', get_string('filteroptions', 'filter_translations'));
-
         $mform->addElement('select', 'issue', get_string('issue', 'filter_translations'), $options);
 
         $languages = [0 => get_string('any')] + get_string_manager()->get_list_of_translations();

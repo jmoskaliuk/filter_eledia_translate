@@ -424,5 +424,17 @@ function xmldb_filter_translations_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026062000, 'filter', 'translations');
     }
 
+    if ($oldversion < 2026062302) {
+        $mergedcolumns = \filter_translations\column_definition::merge_defaults(
+            get_config('filter_translations', 'columndefinition')
+        );
+
+        if ($mergedcolumns !== null) {
+            set_config('columndefinition', $mergedcolumns, 'filter_translations');
+        }
+
+        upgrade_plugin_savepoint(true, 2026062302, 'filter', 'translations');
+    }
+
     return true;
 }

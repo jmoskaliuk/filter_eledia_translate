@@ -53,7 +53,7 @@ class edittranslationform extends persistent {
      * @var string[]
      */
     protected static $foreignfields = ['substitutetext_plain', 'substitutetext_editor', 'substitutetext_format',
-        'substitutetexttrust', 'returnurl', 'deletebutton'];
+        'substitutetexttrust', 'returnurl', 'deletebutton', 'submitnextbutton'];
 
     /**
      * Build the form.
@@ -78,6 +78,9 @@ class edittranslationform extends persistent {
 
         $mform->addElement('hidden', 'returnurl');
         $mform->setType('returnurl', PARAM_URL);
+
+        $mform->addElement('html', '<div class="filter-translations-edit-layout">');
+        $mform->addElement('html', '<div class="filter-translations-edit-meta">');
 
         if (has_capability('filter/translations:edittranslationhashkeys', context_system::instance())) {
             $mform->addElement('text', 'md5key', get_string('md5key', 'filter_translations'), 'maxlength="32" size="32"');
@@ -105,54 +108,45 @@ class edittranslationform extends persistent {
         $mform->addElement('select', 'targetlanguage', get_string('targetlanguage', 'filter_translations'), $translations);
         $mform->setDefault('targetlanguage', current_language());
 
-        $mform->addElement('html', "<div class='row'>");
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '<section class="filter-translations-edit-panel filter-translations-edit-source">');
+        $mform->addElement('html', '<h3>' . get_string('rawtext', 'filter_translations') . '</h3>');
 
-        $mform->addElement('html', "<div class='col-lg-6'>");
-
-        $mform->addElement('html', '<ul class="nav nav-tabs" id="" role="tablist">');
-
-        // Build a bunch of tab links.
-
-        // View the raw source text.
-        $this->addtablink($mform, 'rawtext', get_string('rawtext', 'filter_translations'), true);
-
-        // For stale translations, a diff showing the text the translation was created for against the new text.
+        $sourceviews = 1;
         if (!empty($this->_customdata['showdiff'])) {
-            $this->addtablink($mform, 'diff', get_string('diff', 'filter_translations'));
+            $sourceviews++;
         }
-
-        // For stale translations, the text the translation was created for.
         if (!empty($this->_customdata['old'])) {
-            $this->addtablink($mform, 'old', get_string('old', 'filter_translations'));
+            $sourceviews++;
+        }
+        if (!empty($this->_customdata['sourceishtml'])) {
+            $sourceviews++;
         }
 
-        // When translating rich HTML show the raw HTML.
-        if ($this->_customdata['formtype'] == self::FORMTYPE_RICH) {
-            $this->addtablink($mform, 'rawhtml', get_string('rawhtml', 'filter_translations'));
+        if ($sourceviews > 1) {
+            $mform->addElement('html', '<div class="filter-translations-edit-source-views">');
+            $this->addsourceview($mform, get_string('rawtext', 'filter_translations'),
+                $this->get_persistent()->get('rawtext'), true);
+        } else {
+            $mform->addElement('html', '<div class="filter-translations-edit-tabcontent">');
+            $mform->addElement('html', $this->get_persistent()->get('rawtext'));
         }
-
-        $mform->addElement('html', '</ul>');
-
-        // Build the contents of each tab.
-
-        // The raw text.
-        $mform->addElement('html', '<div class="tab-content" id="">');
-        $this->addtabcontents($mform, 'rawtext', $this->get_persistent()->get('rawtext'), true);
 
         // The div that the diff2html.js will populate with a nice diff viewer.
-        if (!empty($this->_customdata['showdiff'])) {
-            $this->addtabcontents($mform, 'diff', '<div class="translationdiff" id="translationdiff"></div>');
+        if ($sourceviews > 1 && !empty($this->_customdata['showdiff'])) {
+            $this->addsourceview($mform, get_string('diff', 'filter_translations'),
+                '<div class="translationdiff" id="translationdiff"></div>');
         }
 
         // The old text.
-        if (!empty($this->_customdata['old'])) {
-            $this->addtabcontents($mform, 'old', $this->_customdata['old']);
+        if ($sourceviews > 1 && !empty($this->_customdata['old'])) {
+            $this->addsourceview($mform, get_string('old', 'filter_translations'), $this->_customdata['old']);
         }
 
         // The raw HTML - run the HTML fragment through an HTML tidying function to indent it neatly etc. and do some
         // HTML entity encoding.
-        if ($this->_customdata['formtype'] == self::FORMTYPE_RICH) {
-            $this->addtabcontents($mform, 'rawhtml', \html_writer::tag('pre',
+        if ($sourceviews > 1 && !empty($this->_customdata['sourceishtml'])) {
+            $this->addsourceview($mform, get_string('rawhtml', 'filter_translations'), \html_writer::tag('pre',
                 str_replace('>', '&gt;', str_replace('<', '&lt;',
                     unifieddiff::tidyhtml($this->get_persistent()->get('rawtext'))
                 )),
@@ -160,12 +154,10 @@ class edittranslationform extends persistent {
             ));
         }
 
-        $mform->addElement('html', "</div>");
-
-        $mform->addElement('html', "</div>");
-
-        $mform->addElement('html', "<div class='col-lg-6'>");
-        $mform->addElement('html', "<div><h4 class='pb-3'>" . get_string('substitutetext', 'filter_translations') . "</h4></div>");
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '</section>');
+        $mform->addElement('html', '<section class="filter-translations-edit-panel filter-translations-edit-target">');
+        $mform->addElement('html', '<h3>' . get_string('substitutetext', 'filter_translations') . '</h3>');
         switch ($this->_customdata['formtype']) {
             case self::FORMTYPE_RICH:
                 $mform->addElement('editor', 'substitutetext_editor', get_string('substitutetext', 'filter_translations'), null,
@@ -186,25 +178,23 @@ class edittranslationform extends persistent {
             default:
                 throw new \moodle_exception('unknownformtype');
         }
-        $mform->addElement('html', "</div>");
-
-        $mform->addElement('html', "</div>");
+        $mform->addElement('html', '</section>');
 
         $mform->addElement('hidden', 'contextid');
 
         $mform->addElement('hidden', 'lastgeneratedhash');
 
-        $buttonarray = [
-            $mform->createElement('submit', 'submitbutton', get_string('savechanges')),
-        ];
-
-        $buttonarray[] = $mform->createElement('cancel');
-
+        $mform->addElement('html', '<div class="filter-translations-edit-actions">');
+        $mform->addElement('html', \html_writer::link($this->_customdata['returnurl'] ?? new \moodle_url('/filter/translations/managetranslations.php'),
+            get_string('backtooverview', 'filter_translations'), ['class' => 'lh-btn-outline']));
+        $mform->addElement('submit', 'submitbutton', get_string('savechanges'), ['class' => 'lh-btn-open']);
+        $mform->addElement('submit', 'submitnextbutton', get_string('saveandnext', 'filter_translations'),
+            ['class' => 'lh-btn-open']);
         if (!empty($this->get_persistent()->get('id')) && has_capability('filter/translations:deletetranslations', $PAGE->context)) {
-            $buttonarray[] = $mform->createElement('submit', 'deletebutton', get_string('delete'));
+            $mform->addElement('submit', 'deletebutton', get_string('delete'), ['class' => 'lh-btn-outline']);
         }
-
-        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
+        $mform->addElement('html', '</div>');
+        $mform->addElement('html', '</div>');
     }
 
     /**
@@ -237,51 +227,23 @@ class edittranslationform extends persistent {
     }
 
     /**
-     * Add a standard Moodle tab.
+     * Add an alternate source view without custom tab JavaScript.
      *
-     * @param $mform
-     * @param $name
-     * @param $label
-     * @param $selected
+     * @param \MoodleQuickForm $mform
+     * @param string $label
+     * @param string $contents
+     * @param bool $open
      * @return void
      */
-    private function addtablink($mform, $name, $label, $selected = false) {
-        if ($selected) {
-            $selectedariaattr = 'true';
-            $selectedclass = 'active';
-        } else {
-            $selectedariaattr = 'false';
-            $selectedclass = '';
+    private function addsourceview($mform, string $label, string $contents, bool $open = false): void {
+        $attributes = ['class' => 'filter-translations-edit-source-view'];
+        if ($open) {
+            $attributes['open'] = 'open';
         }
-        $mform->addElement('html',
-            '<li class="nav-item">
-            <a class="nav-link ' . $selectedclass . '" id="diff-tab" data-toggle="tab" href="#' . $name .
-            '" role="tab" aria-selected="' . $selectedariaattr . '">
-            <h4>' . $label . '</h4>
-            </a>
-            </li>');
-    }
-
-    /**
-     * Add the contents of a tab.
-     *
-     * @param $mform
-     * @param $name
-     * @param $contents
-     * @param $selected
-     * @return void
-     */
-    private function addtabcontents($mform, $name, $contents, $selected = false) {
-        if ($selected) {
-            $selectedattr = 'show active';
-        } else {
-            $selectedattr = '';
-        }
-        $mform->addElement('html',
-            '<div class="tab-pane fade ' . $selectedattr . '" id="' . $name . '" role="tabpanel" aria-labelledby="' . $name .
-            '-tab">');
-        $mform->addElement('html', $contents);
-        $mform->addElement('html', "</div>");
+        $mform->addElement('html', \html_writer::start_tag('details', $attributes) .
+            \html_writer::tag('summary', $label, ['class' => 'filter-translations-edit-source-view__summary']) .
+            \html_writer::div($contents, 'filter-translations-edit-tabcontent') .
+            \html_writer::end_tag('details'));
     }
 
     /**

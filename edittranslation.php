@@ -26,6 +26,7 @@
 use filter_translations\edittranslationform;
 use filter_translations\translation;
 use filter_translations\unifieddiff;
+use filter_translations\output\shell;
 
 require_once(__DIR__ . '../../../config.php');
 
@@ -63,8 +64,9 @@ if (!empty($coursecontext)) {
 }
 
 $PAGE->set_url($url);
+$PAGE->set_pagelayout('standard');
 $PAGE->set_title($title);
-$PAGE->set_heading($title);
+$PAGE->set_heading('');
 
 $persistent = null;
 if (empty($id)) {
@@ -117,20 +119,18 @@ if (!empty($rawtext)) {
     $persistent->set('rawtext', $rawtext);
 }
 
-if (
-    (!isset($rawtext) && empty($persistent->get('substitutetext')))
-    ||
-    $rawtext != strip_tags($rawtext) || $persistent->get('substitutetext') != strip_tags($persistent->get('substitutetext'))
-) {
-    $formtype = edittranslationform::FORMTYPE_RICH;
-} else if (strpos($rawtext, "\n") !== false) {
-    $formtype = edittranslationform::FORMTYPE_PLAINMULTILINE;
-} else {
-    $formtype = edittranslationform::FORMTYPE_PLAIN;
-}
+$sourceishtml = (string)$rawtext !== strip_tags((string)$rawtext);
+$formtype = edittranslationform::FORMTYPE_RICH;
 
 $form = new edittranslationform($url->out(false),
-    ['persistent' => $persistent, 'formtype' => $formtype, 'showdiff' => $showdiff, 'old' => $old]);
+    [
+        'persistent' => $persistent,
+        'formtype' => $formtype,
+        'showdiff' => $showdiff,
+        'old' => $old,
+        'sourceishtml' => $sourceishtml,
+        'returnurl' => $returnurl,
+    ]);
 
 if ($data = $form->get_data()) {
     if (!empty($data->deletebutton) && has_capability('filter/translations:deletetranslations', $context)) {
@@ -170,8 +170,20 @@ if ($data = $form->get_data()) {
         notice(get_string('translationalreadyexists', 'filter_translations', $targetlanguage), $returnurl);
     }
 
-    redirect($returnurl);
-} else if ($form->is_cancelled()) {
+    if (!empty($data->submitnextbutton)) {
+        $nextrecords = $DB->get_records_select('filter_translations', 'id > :id', ['id' => $persistent->get('id')],
+            'id ASC', 'id, contextid, targetlanguage', 0, 1);
+        if (!empty($nextrecords)) {
+            $nextrecord = reset($nextrecords);
+            redirect(new moodle_url('/filter/translations/edittranslation.php', [
+                'id' => $nextrecord->id,
+                'contextid' => $nextrecord->contextid,
+                'targetlanguage' => $nextrecord->targetlanguage,
+                'returnurl' => $returnurl,
+            ]));
+        }
+    }
+
     redirect($returnurl);
 }
 $form->set_data(['returnurl' => $returnurl, 'targetlanguage' => $targetlanguage]);
@@ -179,14 +191,22 @@ $form->set_data(['returnurl' => $returnurl, 'targetlanguage' => $targetlanguage]
 $PAGE->requires->js(new moodle_url('/filter/translations/lib/diff2html.js'));
 $PAGE->requires->css(new moodle_url('https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css'));
 
+shell::require_css();
 echo $OUTPUT->header();
+shell::open($title, get_string('dashboardtranslations_desc', 'filter_translations'),
+    shell::MODIFIER_EDITING);
 
 if ($istranslationstale) {
     echo html_writer::div(get_string('staletranslation', 'filter_translations'), 'alert alert-warning');
 }
 
-echo html_writer::tag('h2', get_string('translation', 'filter_translations'));
-
+echo html_writer::tag('h2', get_string('translation', 'filter_translations'),
+    ['class' => 'filter-translations-settings-heading']);
+echo html_writer::start_tag('section', ['class' => 'filter-translations-settings-card filter-translations-edit-card']);
+echo html_writer::start_div('filter-translations-settings-card__body filter-translations-form-card');
 $form->display();
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
 
+shell::close();
 echo $OUTPUT->footer();

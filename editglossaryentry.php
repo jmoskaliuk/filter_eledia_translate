@@ -16,6 +16,7 @@
 
 use filter_translations\glossary_entry;
 use filter_translations\glossary_entry_form;
+use filter_translations\output\shell;
 
 require(__DIR__ . '/../../config.php');
 
@@ -30,9 +31,11 @@ require_capability('filter/translations:edittranslations', $context);
 $url = new moodle_url('/filter/translations/editglossaryentry.php', ['id' => $id, 'returnurl' => $returnurl]);
 $PAGE->set_context($context);
 $PAGE->set_url($url);
-$PAGE->set_title($id ? get_string('editglossaryentry', 'filter_translations') :
-    get_string('createglossaryentry', 'filter_translations'));
-$PAGE->set_heading($PAGE->title);
+$pagetitle = $id ? get_string('editglossaryentry', 'filter_translations') :
+    get_string('createglossaryentry', 'filter_translations');
+$PAGE->set_pagelayout('standard');
+$PAGE->set_title($pagetitle);
+$PAGE->set_heading('');
 
 $entry = $id ? new glossary_entry($id) : new glossary_entry();
 $form = new glossary_entry_form($url->out(false));
@@ -58,6 +61,10 @@ $formdata->courseid = empty($formdata->courseid) ? 0 : $formdata->courseid;
 $formdata->returnurl = $returnurl;
 $form->set_data($formdata);
 
+shell::require_css();
 echo $OUTPUT->header();
+shell::open($pagetitle, get_string('dashboardcreateglossary_desc', 'filter_translations'),
+    shell::MODIFIER_EDITING);
 $form->display();
+shell::close();
 echo $OUTPUT->footer();

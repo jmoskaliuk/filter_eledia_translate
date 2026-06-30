@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 use context_course;
 use context_module;
 use context_system;
+use filter_translations\column_definition;
 use filter_translations;
 
 global $CFG; // This class is included inside existing functions.
@@ -61,7 +62,7 @@ class copy_translations extends \core\task\scheduled_task {
         $json = get_config('filter_translations', 'columndefinition');
 
         if (empty($json)) {
-            return; // Nothing to process.
+            $json = column_definition::default_json();
         }
 
         $columnsbytabletoprocess = json_decode($json);
@@ -93,8 +94,6 @@ class copy_translations extends \core\task\scheduled_task {
         }
 
         $languages = get_string_manager()->get_list_of_translations(); // Languages in used in the site.
-        $anyexception = null;
-
         // Get all translations records.
         $alltranslations = $DB->get_records('filter_translations', null, '', 'id, md5key, lastgeneratedhash, targetlanguage');
 
@@ -116,10 +115,8 @@ class copy_translations extends \core\task\scheduled_task {
                     mtrace("-- Table $table cannot be processed. Skipping...");
                     continue;
                 } else if (!isset($columnsbytable[$table]) || !in_array($column, $columnsbytable[$table])) {
-                    $ex = new \moodle_exception('unknowncolumn', 'filter_translations');
-                    mtrace_exception($ex);
-                    $anyexception = $ex;
-                    continue; // Skip this and move to the next column.
+                    mtrace("-- Column $table -> $column cannot be processed. Skipping...");
+                    continue;
                 }
 
                 $rs = $DB->get_recordset_select($table, "$column IS NOT NULL AND $column <> ''");
@@ -228,11 +225,6 @@ class copy_translations extends \core\task\scheduled_task {
             mtrace('');
         }
         $transaction->allow_commit();
-
-        if ($anyexception) {
-            // If there was any error, ensure the task fails.
-            throw $anyexception;
-        }
     }
 
     /**

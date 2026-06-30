@@ -56,7 +56,13 @@ class course_translation_policy_test extends advanced_testcase {
      * @param string $value
      * @param int $intvalue
      */
-    private function set_customfield_value(int $fieldid, int $courseid, string $value, int $intvalue): void {
+    private function set_customfield_value(
+        int $fieldid,
+        int $courseid,
+        string $value,
+        int $intvalue,
+        string $charvalue = ''
+    ): void {
         global $DB;
 
         $now = time();
@@ -64,6 +70,7 @@ class course_translation_policy_test extends advanced_testcase {
             'fieldid' => $fieldid,
             'instanceid' => $courseid,
             'intvalue' => $intvalue,
+            'charvalue' => $charvalue,
             'value' => $value,
             'valueformat' => FORMAT_PLAIN,
             'contextid' => context_course::instance($courseid)->id,
@@ -115,6 +122,8 @@ class course_translation_policy_test extends advanced_testcase {
         $langfieldid = $DB->get_field('customfield_field', 'id', ['shortname' => 'eledia_translate_languages']);
         $this->assertNotEmpty($enabledfieldid);
         $this->assertNotEmpty($langfieldid);
+        $this->assertSame('languageselect',
+            $DB->get_field('customfield_field', 'type', ['id' => $langfieldid]));
 
         $course = $this->getDataGenerator()->create_course();
         $context = context_course::instance($course->id);
@@ -125,11 +134,53 @@ class course_translation_policy_test extends advanced_testcase {
 
         // feat06.AC02 / AC03: enabled with restricted languages de, fr.
         $this->set_customfield_value($enabledfieldid, $course->id, '1', 1);
-        $this->set_customfield_value($langfieldid, $course->id, 'de, fr', 0);
+        $this->set_customfield_value($langfieldid, $course->id, '', 0, 'de,fr');
 
         $this->purge_policy_cache();
         $policy = course_translation_policy::for_context($context);
         $this->assertTrue($policy->translation_enabled());
+        $this->assertTrue($policy->language_enabled('de'));
+        $this->assertTrue($policy->language_enabled('fr'));
+        $this->assertFalse($policy->language_enabled('es'));
+    }
+
+    public function test_legacy_language_textarea_field_is_converted_to_selector(): void {
+        global $DB;
+
+        set_config('coursecontrolsource', course_translation_policy::CONTROL_CUSTOMFIELDS, 'filter_translations');
+        course_customfields::ensure();
+
+        $langfield = $DB->get_record('customfield_field', ['shortname' => 'eledia_translate_languages'], '*', MUST_EXIST);
+        $langfield->type = 'textarea';
+        $langfield->configdata = json_encode([
+            'required' => 0,
+            'uniquevalues' => 0,
+            'visibility' => 2,
+            'defaultvalue' => 'de, es',
+            'defaultvalueformat' => FORMAT_PLAIN,
+        ]);
+        $DB->update_record('customfield_field', $langfield);
+
+        $enabledfieldid = $DB->get_field('customfield_field', 'id', ['shortname' => 'eledia_translate_enabled']);
+        $course = $this->getDataGenerator()->create_course();
+        $context = context_course::instance($course->id);
+        $this->set_customfield_value($enabledfieldid, $course->id, '1', 1);
+        $this->set_customfield_value((int)$langfield->id, $course->id, 'de, fr', 0);
+
+        course_customfields::ensure();
+        $convertedfield = $DB->get_record('customfield_field', ['id' => $langfield->id], '*', MUST_EXIST);
+        $this->assertSame('languageselect', $convertedfield->type);
+        $convertedconfig = json_decode($convertedfield->configdata, true);
+        $this->assertSame('de,es', $convertedconfig['defaultvalue']);
+
+        $converteddata = $DB->get_record('customfield_data', [
+            'fieldid' => $langfield->id,
+            'instanceid' => $course->id,
+        ], '*', MUST_EXIST);
+        $this->assertSame('de,fr', $converteddata->charvalue);
+
+        $this->purge_policy_cache();
+        $policy = course_translation_policy::for_context($context);
         $this->assertTrue($policy->language_enabled('de'));
         $this->assertTrue($policy->language_enabled('fr'));
         $this->assertFalse($policy->language_enabled('es'));

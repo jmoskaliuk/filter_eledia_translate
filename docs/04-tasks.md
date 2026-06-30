@@ -38,7 +38,7 @@ Das Plugin liegt lokal vor, aber Runtime-Checks brauchen einen Moodle-Root, in d
 
 **Antwort**
 Naheliegender lokaler Moodle-Root fuer die Runtime-Pruefung:
-`/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle/public`
+`/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle`
 
 ---
 
@@ -108,7 +108,7 @@ Done-Checkliste
 
 Naechster empfohlener Schritt: `task02 Lokale Moodle-Verifikation einrichten` (Code vorbereitet, es fehlt nur der Runtime-Lauf gegen moodle52).
 
-Letzter abgeschlossener Schritt: `task19 Empfohlene Kurssteuerung als Default` (Custom Fields mit Tag-Fallback ist Default und Upgrade-Migration; Runtime-Ausfuehrung haengt an passender Moodle/PHP-Umgebung).
+Letzter abgeschlossener Schritt: `task20 Plugin-Shell-UX finalisieren` (konsolidierte Settings-Seite, standalone Shell, Glossar-/Translations-UX und Review-Fixes sind umgesetzt; Runtime-Ausfuehrung haengt an lokaler Moodle-/Behat-Umgebung).
 
 ---
 
@@ -136,15 +136,18 @@ Das Plugin lokal in einen Moodle-Checkout einbinden und Installation sowie PHPUn
 Installation, Upgrade, Kern-UI und automatisierte Tests sind lokal reproduzierbar dokumentiert.
 
 **Aktueller Stand**
-Nach `task12`/`task13` sind Schema (inkl. Unique-Index `scope_course_lang`), Settings (API-Key als Passwortfeld), Glossar-UI, CSV-Import/Export (jetzt ueber `glossary_importer`), DeepL-v3-Sync und neue PHPUnit-Tests im Repo. Version auf `2026061500` / `2.1.0-beta` gebumpt. Offen ist ausschliesslich der Runtime-Lauf gegen moodle52.
+Nach `task20` sind Schema (inkl. Unique-Index `scope_course_lang`), Settings (API-Key als Passwortfeld), Glossar-UI, CSV-Import/Export (jetzt ueber `glossary_importer`), DeepL-v3-Sync, konsolidierte Plugin-Shell-Settings und neue PHPUnit-/Behat-Tests im Repo. Version auf `2026062302` / `2.1.2-beta` gebumpt. Offen ist der vollstaendige Runtime-Lauf gegen moodle52.
+
+**Aktueller Runtime-Blocker**
+Der lokale Moodle-Checkout nutzt Docker-orientierte Pfade in `config.php`. Lokale CLI-/PHPUnit-Aufrufe aus `/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle` scheitern aktuell mit `$CFG->dataroot is not configured properly`, weil `/var/www/moodledata` und `/var/www/phpunitdata` ausserhalb des Containers nicht existieren. Entweder die Docker-Umgebung verwenden oder lokale Dataroot-Pfade konfigurieren.
 
 **Runtime-Befehle (auf dem Mac, nicht in der KI-Sandbox)**
 ```bash
-MOODLE=/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle/public
-ln -sfn "$(pwd)" "$MOODLE/filter/translations"   # Plugin einbinden
-php "$MOODLE/admin/cli/upgrade.php"               # Upgrade-Step 2026061500 ausfuehren
-php "$MOODLE/admin/tool/phpunit/cli/init.php"     # PHPUnit-Testumgebung (nach Schema-Aenderung noetig)
-cd "$MOODLE" && vendor/bin/phpunit filter/translations/tests
+MOODLE=/Users/moskaliuk/Documents/Code/Lernhive/runtime/moodle52/moodle
+ln -sfn "$(pwd)" "$MOODLE/public/filter/translations" # Plugin einbinden
+php "$MOODLE/admin/cli/upgrade.php"                    # Upgrade-Step ausfuehren
+php "$MOODLE/admin/tool/phpunit/cli/init.php"          # PHPUnit-Testumgebung (nach Schema-Aenderung noetig)
+cd "$MOODLE" && vendor/bin/phpunit public/filter/translations/tests
 ```
 Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init` und `moodle-plugin-ci phpunit --fail-on-warning`.
 
@@ -159,8 +162,10 @@ Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init`
 
 ## Verifikation nach Deploy
 
-- Glossar-Import in Moodle erneut mit der Datei testen, die zuvor `mdb->get_record() found more than one record!` ausgeloest hat.
-- Glossarverwaltung pruefen: Paginierung sichtbar bei mehr als 100 Treffern; `Create glossary entry` steht oben neben `DeepL glossary sync`.
+- Plugin-Shell pruefen: Dashboard, Einstellungen, Uebersetzungen, Probleme, Glossar und Import/Export in `filter/translations/*`.
+- Settings pruefen: Abschnittsnavigation, ein globaler Speichern-Button, Kursfeld-Setup und DeepL-Test-Aktion.
+- Glossarverwaltung pruefen: Glossar-Gruppen, Empty-State, Paginierung bei mehr als 100 Treffern, Import/Export und DeepL-Sync.
+- Uebersetzungsbearbeitung pruefen: Original oben, Uebersetzung darunter, `Speichern und naechste`, Rueckkehr zur Uebersicht.
 - Optional DeepL-Sync-Preview oeffnen und einen echten Sync mit Test-Key ausfuehren.
 
 ---
@@ -168,6 +173,38 @@ Alternativ ueber die eLeDia-Pipeline: `bash deploy.sh --source . --phpunit-init`
 ## Done
 
 Erledigte Tasks bleiben als Historie erhalten.
+
+### task20 Plugin-Shell-UX finalisieren
+
+Status:    done (Code), Ausfuehrung haengt an task02
+Feature:   feat08, feat10
+Prioritaet: P1
+Linked:    test18, test19, test21
+
+**Ziel**
+Die Uebersetzungsverwaltung soll konsistent in der LernHive-nahen Plugin-Shell laufen, ohne eine harte Abhaengigkeit zu `local_lernhive` einzufuehren.
+
+**Schritte**
+1. Standalone Shell in `classes/output/shell.php` und `styles.css` bereitstellen.
+2. Setup-/Onboarding-Flow in `pluginsettings.php` konsolidieren; `onboarding.php` als Redirect-Kompatibilitaet erhalten.
+3. Dashboard, Glossar, Probleme, Import/Export und Uebersetzungsbearbeitung an die Shell- und Action-Icon-Patterns angleichen.
+4. Review-Fixes umsetzen: Behat-Feature aktualisieren, tote Redirect-/Cancel-Branches entfernen, Capability-Mismatch korrigieren, Glossar-Gruppen performant laden.
+5. UX-Review-Fixes umsetzen: `.lh-*`-CSS scopen, Settings-Aktionen auf einen globalen Submit reduzieren, handgerollte Tabs im Edit-Formular entfernen.
+6. DevFlow-Doku aktualisieren.
+
+**Erwartetes Ergebnis**
+Das Plugin ist standalone installierbar, ueberschreibt keine fremden LernHive-Shell-Klassen und bietet eine konsistente Bedienoberflaeche fuer Setup und Pflege.
+
+**Aktueller Stand**
+Implementiert im Branch `wip_johannes`. PHP-Lint und `git diff --check` sind gruen. Lokaler Behat-Lauf ist in der aktuellen Umgebung geblockt, weil Moodle vor dem Feature-Start eine Composer-/Upgrade-Umgebungsmeldung liefert.
+
+**Done-Checkliste**
+- [x] 01-features.md aktualisiert
+- [x] 02-user-doc.md aktualisiert
+- [x] 03-dev-doc.md aktualisiert
+- [x] test19/test21 aktualisiert
+- [ ] Vollstaendiger Browser-/Behat-Lauf in sauberer Moodle-Umgebung gruen
+- [ ] PO Sign-off
 
 ### task19 Empfohlene Kurssteuerung als Default
 
@@ -229,9 +266,9 @@ Feature-Dateien liegen unter `tests/behat/`. Lokaler `php admin/tool/behat/cli/i
 - [ ] Behat-Lauf in PHP-8.4-Umgebung gruen
 - [ ] PO Sign-off
 
-### task17 Setup-Onboarding-Workflow
+### task17 Setup-Onboarding-Workflow (historisch)
 
-Status:    done (Code), Ausfuehrung haengt an task02
+Status:    superseded by task20
 Feature:   feat10
 Prioritaet: P1
 Linked:    test19
@@ -246,7 +283,7 @@ Administratoren werden durch alle wesentlichen Erstkonfigurationen des Filter-Pl
 4. Spracheintraege und DevFlow-Doku aktualisieren.
 
 **Erwartetes Ergebnis**
-Die zentrale Erstkonfiguration inklusive DeepL API kann ueber einen gefuehrten Workflow erledigt werden.
+Die zentrale Erstkonfiguration inklusive DeepL API konnte ueber einen gefuehrten Workflow erledigt werden. Der urspruengliche mehrstufige Ablauf wurde in `task20` durch die konsolidierte Plugin-Settings-Seite ersetzt; `onboarding.php` bleibt als Redirect-Kompatibilitaet erhalten.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert
@@ -410,7 +447,7 @@ Der Glossar-Import soll auch bei vorhandenen Dubletten stabil laufen, und die wi
 CSV-Import laeuft ohne Moodle-Notice bei mehrfach vorhandenen fachlichen Schluesseln. Admins finden Create und Sync direkt oben in der Glossarverwaltung.
 
 **Aktueller Stand**
-Implementiert und nach GitHub gepusht mit Commit `3eb669b Fix glossary import duplicate handling`.
+Implementiert mit Commit `3eb669b Fix glossary import duplicate handling`.
 
 **Done-Checkliste**
 - [x] 01-features.md aktualisiert

@@ -42,8 +42,6 @@ class managetranslations_filterform extends \moodleform {
 
         $mform = $this->_form;
 
-        $mform->addElement('header', 'filteroptions', get_string('filteroptions', 'filter_translations'));
-
         $languages = [0 => get_string('any')] + get_string_manager()->get_list_of_translations();
 
         if (!has_capability('filter/translations:editsitedefaulttranslations', $PAGE->context) && isset($languages[$CFG->lang])) {

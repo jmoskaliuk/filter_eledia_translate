@@ -304,7 +304,10 @@ class course_translation_policy {
             return null;
         }
 
-        $value = $record->value ?? '';
+        $value = $record->charvalue ?? '';
+        if ($value === '') {
+            $value = $record->value ?? '';
+        }
         if ($value === '' && isset($record->intvalue)) {
             $value = (string)$record->intvalue;
         }

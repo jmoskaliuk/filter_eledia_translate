@@ -208,7 +208,7 @@ Linked:             q01, task02
 
 **Schritte**
 1. Aus Moodle-Root ausfuehren: `vendor/bin/phpunit --testsuite filter_translations_testsuite`.
-2. Falls Testsuite nicht registriert ist: `vendor/bin/phpunit filter/translations/tests`.
+2. Falls Testsuite nicht registriert ist: `vendor/bin/phpunit public/filter/translations/tests`.
 
 **Erwartetes Ergebnis**
 Vorhandene Tests fuer Filter, Translator, Caching, Events, Issues und Language Strings laufen gruen.
@@ -393,7 +393,7 @@ Letzter Lauf:       -
 Linked:             task13
 
 **Schritte**
-1. `vendor/bin/phpunit filter/translations/tests/course_translation_policy_test.php`.
+1. `vendor/bin/phpunit public/filter/translations/tests/course_translation_policy_test.php`.
 
 **Erwartetes Ergebnis**
 Tags-, Custom-Fields- und Fallback-Steuerung sowie leere Sprachliste und Site-Kontext verhalten sich wie in feat06 beschrieben.
@@ -411,7 +411,7 @@ Letzter Lauf:       -
 Linked:             task19
 
 **Schritte**
-1. `vendor/bin/phpunit filter/translations/tests/course_translation_policy_test.php --filter test_default_control_source_uses_customfields_with_tag_fallback`.
+1. `vendor/bin/phpunit public/filter/translations/tests/course_translation_policy_test.php --filter test_default_control_source_uses_customfields_with_tag_fallback`.
 2. Ohne gespeichertes `coursecontrolsource` pruefen, dass Tags als Fallback funktionieren.
 3. Danach ein Custom-Field-Policy-Signal setzen und pruefen, dass Custom Fields Tags uebersteuern.
 
@@ -431,7 +431,7 @@ Letzter Lauf:       -
 Linked:             task13, bug02
 
 **Schritte**
-1. `vendor/bin/phpunit filter/translations/tests/glossary_sync_test.php`.
+1. `vendor/bin/phpunit public/filter/translations/tests/glossary_sync_test.php`.
 
 **Erwartetes Ergebnis**
 Sprach-Mapping, Gruppierung nur approved, leere/ungueltige Gruppe ohne Netzwerk und Glossary-ID-Aufloesung (Kurs vor global) stimmen.
@@ -449,7 +449,7 @@ Letzter Lauf:       -
 Linked:             task13, bug01
 
 **Schritte**
-1. `vendor/bin/phpunit filter/translations/tests/glossary_importer_test.php`.
+1. `vendor/bin/phpunit public/filter/translations/tests/glossary_importer_test.php`.
 
 **Erwartetes Ergebnis**
 Create/Update, gemeinsames Update vorhandener Dubletten (Regression bug01), getrennter Kurs-Scope und Validierungs-Skips funktionieren.
@@ -487,7 +487,7 @@ Letzter Lauf:       -
 Linked:             bug07, task14
 
 **Schritte**
-1. `vendor/bin/phpunit filter/translations/tests/filter_test.php --filter test_cached_hash_translation_does_not_apply_to_plain_text`.
+1. `vendor/bin/phpunit public/filter/translations/tests/filter_test.php --filter test_cached_hash_translation_does_not_apply_to_plain_text`.
 
 **Erwartetes Ergebnis**
 Eine Cache-Translation fuer Text mit `data-translationhash` wird nicht auf denselben sichtbaren Text ohne Hash angewendet.
@@ -536,24 +536,25 @@ Dashboard ist erreichbar, zeigt Status korrekt und blendet Aktionen passend zur 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
 
-### test19 Setup-Onboarding-Workflow
+### test19 Plugin-Settings-Workflow
 
 Feature:            feat10
 Akzeptanzkriterium: feat10.AC01, feat10.AC02
 Typ:                manuell
 Status:             pending
 Letzter Lauf:       -
-Linked:             task17
+Linked:             task17, task20
 
 **Schritte**
-1. Als Admin `filter/translations/onboarding.php` oeffnen.
-2. Jeden Schritt speichern und die Weiterleitung zum Folgeschritt pruefen.
-3. Im Filter-Schritt globales Aktivieren und `Content and headings` setzen.
-4. Im Provider-Schritt DeepL API-Endpunkt und API-Key speichern und anschliessend `testdeepl.php` ausfuehren.
-5. Abschluss-Checks pruefen.
+1. Als Admin `filter/translations/pluginsettings.php` oeffnen.
+2. Abschnittsnavigation fuer `Filter`, `Kurssteuerung`, `DeepL und Anbieter`, `Protokollierung` und `Plugin-Einstellungen` pruefen.
+3. Im Filter-Abschnitt globales Aktivieren und `Content and headings` setzen.
+4. Im Provider-Abschnitt DeepL API-Endpunkt und API-Key speichern und anschliessend `testdeepl.php` ausfuehren.
+5. Pruefen, dass es nur einen globalen Speichern-Bereich am Seitenende gibt.
+6. `filter/translations/onboarding.php?step=course` oeffnen und Redirect auf den passenden Settings-Abschnitt pruefen.
 
 **Erwartetes Ergebnis**
-Der Wizard speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler und markiert erledigte Pflichtpunkte im Abschluss.
+Die Plugin-Settings-Seite speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler und alte Onboarding-Links bleiben kompatibel.
 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
@@ -568,7 +569,7 @@ Letzter Lauf:       2026-06-20
 Linked:             task18
 
 **Schritte**
-1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/manage_glossary.feature`.
+1. Aus Moodle-Root: `vendor/bin/behat public/filter/translations/tests/behat/manage_glossary.feature`.
 2. Szenario `Create a global glossary entry` prueft Anlage und Sichtbarkeit.
 3. Szenario `Filter glossary entries by language` prueft die Sprachfilter.
 
@@ -578,26 +579,27 @@ Glossar-Eintraege lassen sich anlegen und nach Sprachrichtung filtern.
 **Beobachtetes Ergebnis**
 Feature-Datei angelegt. Lokaler Behat-Init ist blockiert, weil die Shell PHP 8.5.5 nutzt und das Moodle-Lockfile PHP bis 8.4 erlaubt.
 
-### test21 Behat Onboarding-Workflow
+### test21 Behat Plugin-Settings-Workflow
 
 Feature:            feat10
 Akzeptanzkriterium: feat10.AC01, feat10.AC02
 Typ:                automatisiert Behat
 Status:             blocked
-Letzter Lauf:       2026-06-20
-Linked:             task18
+Letzter Lauf:       2026-06-30
+Linked:             task18, task20
 
 **Schritte**
-1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/onboarding.feature`.
-2. Onboarding-Seite oeffnen.
-3. Filter-Schritt speichern.
-4. Provider-Schritt mit DeepL-Testdaten speichern.
+1. Aus Moodle-Root: `vendor/bin/behat public/filter/translations/tests/behat/onboarding.feature`.
+2. Plugin-Settings-Seite oeffnen.
+3. Filter-Settings speichern.
+4. Course-Control-Abschnitt ueber `onboarding.php?step=course` erreichen, empfohlenen Fallback-Modus speichern und den Setup-Helper fuer Kursfelder ausfuehren.
+5. Provider-Abschnitt ueber `onboarding.php?step=provider` erreichen und DeepL-Testdaten speichern.
 
 **Erwartetes Ergebnis**
-Der Wizard zeigt alle Schritte und speichert zentrale Settings ohne Live-API-Abhaengigkeit.
+Die konsolidierte Settings-Seite zeigt alle Abschnitte, speichert zentrale Settings ohne Live-API-Abhaengigkeit und bestaetigt die idempotente Anlage der Kursfelder inklusive Sprachfeld `eledia_translate_languages`, das vom Helper als `customfield_languageselect` verwaltet wird.
 
 **Beobachtetes Ergebnis**
-Feature-Datei angelegt. Lokaler Behat-Init ist blockiert durch PHP 8.5.5 statt kompatiblem PHP 8.4.
+Feature-Datei auf die Settings-Seite aktualisiert. Lokaler Behat-Lauf ist in der aktuellen Docker-/Moodle-Umgebung vor Szenariostart blockiert (`Composer\InstalledVersions` im Behat-Runner bzw. Upgrade-Settings-Screen im Browser); Ausfuehrung in sauberer CI-/PHP-8.4-Umgebung ausstehend.
 
 ### test22 Behat Translate-Menue und Inline-Toggle
 
@@ -609,7 +611,7 @@ Letzter Lauf:       2026-06-20
 Linked:             task18
 
 **Schritte**
-1. Aus Moodle-Root: `vendor/bin/behat filter/translations/tests/behat/inline_translation.feature`.
+1. Aus Moodle-Root: `vendor/bin/behat public/filter/translations/tests/behat/inline_translation.feature`.
 2. Filter `translations` global aktivieren.
 3. Navbar-Translate-Dropdown oeffnen.
 4. Inline-Translation starten und erneutes Menue pruefen.
