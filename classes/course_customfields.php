@@ -19,6 +19,7 @@ namespace filter_translations;
 use core_course\customfield\course_handler;
 use core_customfield\category_controller;
 use core_customfield\field_controller;
+use core_component;
 
 /**
  * Creates the recommended course custom fields for translation control.
@@ -58,13 +59,13 @@ class course_customfields {
         $languagesshortname = self::languages_field_shortname();
         $languagesfield = self::field_record_by_shortname($languagesshortname);
         if ($languagesfield) {
-            if ($languagesfield->type !== 'languageselect') {
+            if (self::language_selector_available() && $languagesfield->type !== 'languageselect') {
                 self::convert_languages_field_to_selector((int)$languagesfield->id);
             }
             $messages[] = get_string('coursefieldexists', 'filter_translations', $languagesshortname);
         } else {
             self::create_field($handler, $category, [
-                'type' => 'languageselect',
+                'type' => self::languages_field_type(),
                 'shortname' => $languagesshortname,
                 'name' => get_string('coursefieldlanguages_name', 'filter_translations'),
                 'description' => get_string('coursefieldlanguages_field_desc', 'filter_translations'),
@@ -190,7 +191,7 @@ class course_customfields {
      * @return string
      */
     private static function normalise_language_value($value): string {
-        if (class_exists('\customfield_languageselect\data_controller')) {
+        if (self::language_selector_available()) {
             return implode(',', \customfield_languageselect\data_controller::normalise_language_codes($value));
         }
 
@@ -248,6 +249,25 @@ class course_customfields {
         $handler->save_field_configuration($field, $record);
 
         return $field;
+    }
+
+    /**
+     * Get the best available custom field type for target languages.
+     *
+     * @return string
+     */
+    private static function languages_field_type(): string {
+        return self::language_selector_available() ? 'languageselect' : 'text';
+    }
+
+    /**
+     * Whether the optional searchable language custom field plugin is present.
+     *
+     * @return bool
+     */
+    private static function language_selector_available(): bool {
+        return class_exists('\customfield_languageselect\data_controller') ||
+            core_component::get_plugin_directory('customfield', 'languageselect') !== null;
     }
 
     /**

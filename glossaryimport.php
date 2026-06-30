@@ -17,7 +17,6 @@
 use filter_translations\form\glossary_import_form;
 use filter_translations\glossary_importer;
 use filter_translations\output\shell;
-use local_lernhive\output\plugin_page;
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/csvlib.class.php');
@@ -109,7 +108,7 @@ if ($form->is_cancelled()) {
     shell::require_css();
     echo $OUTPUT->header();
     shell::open(get_string('importglossary', 'filter_translations'),
-        get_string('dashboardimportglossary_desc', 'filter_translations'), plugin_page::MODIFIER_READING);
+        get_string('dashboardimportglossary_desc', 'filter_translations'), shell::MODIFIER_READING);
     echo $OUTPUT->render_from_template('filter_translations/glossary_import_summary', (object)[
         'processedcount' => $processed,
         'createdcount' => $created,
@@ -127,8 +126,23 @@ if ($form->is_cancelled()) {
 shell::require_css();
 echo $OUTPUT->header();
 shell::open(get_string('importglossary', 'filter_translations'),
-    get_string('dashboardimportglossary_desc', 'filter_translations'), plugin_page::MODIFIER_EDITING);
-echo html_writer::div(get_string('importglossarydescription', 'filter_translations'), 'description');
+    get_string('dashboardimportglossary_desc', 'filter_translations'), shell::MODIFIER_EDITING);
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-upload', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', get_string('importglossary', 'filter_translations'),
+            ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-form-card');
+echo html_writer::tag('p', get_string('importglossarydescription', 'filter_translations'),
+    ['class' => 'filter-translations-card-description']);
 $form->display();
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
 shell::close();
 echo $OUTPUT->footer();

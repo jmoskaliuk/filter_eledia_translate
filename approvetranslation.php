@@ -14,21 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+use filter_translations\translation;
+
 require(__DIR__ . '/../../config.php');
 
-$step = optional_param('step', '', PARAM_ALPHAEXT);
-$anchors = [
-    'filter' => 'setup-filter',
-    'course' => 'setup-course',
-    'provider' => 'setup-provider',
-    'logging' => 'setup-logging',
-    'finish' => 'setup-advanced',
-];
-$anchor = $anchors[$step] ?? null;
+$id = required_param('id', PARAM_INT);
+$returnurl = optional_param('returnurl',
+    (new moodle_url('/filter/translations/managetranslations.php'))->out(false), PARAM_URL);
 
-$params = [];
-if ($anchor !== null) {
-    $params['section'] = $anchor;
-}
+require_login();
+require_sesskey();
 
-redirect(new moodle_url('/filter/translations/pluginsettings.php', $params, $anchor));
+$context = context_system::instance();
+require_capability('filter/translations:edittranslations', $context);
+
+$translation = new translation($id);
+$translation->set('translationsource', translation::SOURCE_MANUAL);
+$translation->update();
+
+redirect(new moodle_url($returnurl));

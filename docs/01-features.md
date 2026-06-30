@@ -350,27 +350,27 @@ Der CSV-Export soll nicht nur Aktivitaetstitel und Intro-Texte erfassen, sondern
 
 ---
 
-### feat10 Setup onboarding workflow
+### feat10 Consolidated plugin settings workflow
 
 **Ziel**
-Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Settings springen muessen, sondern schrittweise durch die zentralen Konfigurationsbereiche gefuehrt werden.
+Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Settings springen muessen, sondern die zentralen Konfigurationsbereiche in einer konsolidierten Plugin-Shell-Seite bearbeiten koennen.
 
 **Verhalten**
 
-- Eine eigene Seite `filter/translations/onboarding.php` fuehrt durch Filterstatus, Kurssteuerung, automatische Provider, Logging und Glossarverwaltung.
-- Der Filter-Schritt kann den Filter global aktivieren und auf `Content and headings` stellen.
-- Der Kurs-Schritt pflegt Control Source, Legacy-Tag und Course-Custom-Field-Shortnames und verlinkt die automatische Kursfeldanlage.
-- Der Provider-Schritt pflegt Reverse Lookup, DeepL-Aktivierung, API-Endpunkt, API-Key, Backoff, Source Language, HTML Tag Handling und Glossary ID.
-- Der Logging-Schritt pflegt Missing-/Stale-/History-Logging, Debounce und ausgeschlossene Seiten.
-- Der Glossar-Schritt verlinkt Glossarverwaltung, Import, Export und DeepL-Sync.
-- Der Abschluss zeigt Setup-Checks fuer Filter, Headings, Kurssteuerung, Provider und DeepL-Glossary-Source-Language.
+- `filter/translations/pluginsettings.php` buendelt Filter, Kurssteuerung, automatische Provider, Logging und erweiterte Plugin-Einstellungen in einer Seite.
+- Eine Abschnittsnavigation springt zu den Konfigurationsbereichen; `onboarding.php?step=...` bleibt als Redirect-Kompatibilitaet fuer alte Links und Tests erhalten.
+- Der Filter-Abschnitt kann den Filter global aktivieren und auf `Content and headings` stellen.
+- Der Kurssteuerungs-Abschnitt pflegt Control Source, Legacy-Tag und Course-Custom-Field-Shortnames und verlinkt die automatische Kursfeldanlage.
+- Der Provider-Abschnitt pflegt Reverse Lookup, DeepL-Aktivierung, API-Endpunkt, API-Key, Backoff, Source Language, HTML Tag Handling und Glossary ID.
+- Der Logging-Abschnitt pflegt Missing-/Stale-/History-Logging, Debounce und ausgeschlossene Seiten.
+- Ein einziger Submit-Bereich speichert die komplette Settings-Seite; Zusatzaktionen bleiben bei den passenden Abschnitten sichtbar.
 
 **Akzeptanzkriterien**
 
 - `feat10.AC01`
   Given: Ein Administrator oeffnet die Plugin-Konfiguration.
-  When: Er den Onboarding-Workflow startet.
-  Then: Er wird schrittweise durch alle wesentlichen Erstkonfigurationen gefuehrt.
+  When: Er die Plugin-Settings-Seite oeffnet.
+  Then: Er findet alle wesentlichen Erstkonfigurationen in der Plugin-Shell und kann per Abschnittsnavigation springen.
 
 - `feat10.AC02`
   Given: Der Administrator speichert den Filter-Schritt mit Headings aktiv.
@@ -392,4 +392,4 @@ Administratoren sollen beim ersten Einrichten nicht durch verstreute Filter-Sett
 - **Plugin version:** `2026062302`
 - **Moodle requires:** `2022112814` / Moodle 4.1.13
 - **Maturity:** `MATURITY_BETA`
-- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, empfohlene Kurssteuerung mit Tag-Fallback, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, Onboarding-Workflow, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.
+- **Status:** DevFlow, DeepL-only Provider, Course Custom Fields, empfohlene Kurssteuerung mit Tag-Fallback, Glossarverwaltung, CSV Import/Export, DeepL-v3-Glossary-Sync, zentrale Setup-Seite, konsolidierte Plugin-Shell-Settings, Titel-Hash-Fix, Cache-Key-Fix und erweiterter Aktivitaetscontent-Export sind implementiert. Runtime-Verifikation in Moodle (`task02`) bleibt offen.

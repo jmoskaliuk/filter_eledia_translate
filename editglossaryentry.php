@@ -17,7 +17,6 @@
 use filter_translations\glossary_entry;
 use filter_translations\glossary_entry_form;
 use filter_translations\output\shell;
-use local_lernhive\output\plugin_page;
 
 require(__DIR__ . '/../../config.php');
 
@@ -65,7 +64,7 @@ $form->set_data($formdata);
 shell::require_css();
 echo $OUTPUT->header();
 shell::open($pagetitle, get_string('dashboardcreateglossary_desc', 'filter_translations'),
-    plugin_page::MODIFIER_EDITING);
+    shell::MODIFIER_EDITING);
 $form->display();
 shell::close();
 echo $OUTPUT->footer();

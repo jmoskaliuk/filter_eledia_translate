@@ -7,8 +7,16 @@
     (at your option) any later version.
 }}
 
-<div class="generalbox">
-  <h2 class="h3">{{#str}} importsummary, filter_translations {{/str}}</h2>
+<section class="lh-plugin-card filter-translations-workbench-card">
+  <div class="lh-plugin-card__top">
+    <span class="lh-plugin-card__icon lh-plugin-card__icon--generic">
+      <i class="fa fa-check-square" aria-hidden="true"></i>
+    </span>
+    <div class="lh-plugin-card__meta">
+      <h2 class="lh-plugin-card__title">{{#str}} importsummary, filter_translations {{/str}}</h2>
+    </div>
+  </div>
+  <div class="lh-plugin-card__body filter-translations-table-card">
   <p>{{#str}} processedcount, filter_translations, {{processedcount}} {{/str}}</p>
   <p>{{#str}} glossarycreatedcount, filter_translations, {{createdcount}} {{/str}}</p>
   <p>{{#str}} glossaryupdatedcount, filter_translations, {{updatedcount}} {{/str}}</p>
@@ -37,5 +45,6 @@
     </table>
   {{/hasskipped}}
 
-  <p><a class="btn btn-primary" href="{{continueurl}}">{{#str}} continue {{/str}}</a></p>
-</div>
+  <p><a class="lh-btn-open" href="{{continueurl}}">{{#str}} continue {{/str}}</a></p>
+  </div>
+</section>

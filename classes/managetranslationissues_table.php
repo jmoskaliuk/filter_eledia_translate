@@ -296,7 +296,7 @@ class managetranslationissues_table extends table_sql {
                 'returnurl' => $PAGE->url,
             ]),
             get_string('edittranslation', 'filter_translations'),
-            ['class' => 'btn btn-secondary']
+            ['class' => 'lh-btn-outline filter-translations-action-button filter-translations-action-button--small']
         );
     }
 
@@ -337,7 +337,7 @@ class managetranslationissues_table extends table_sql {
 
             $deletebuttonparams = [
                 'type'  => 'submit',
-                'class' => 'btn btn-secondary mr-1',
+                'class' => 'lh-btn-outline filter-translations-action-button',
                 'id'    => 'deletetranslationsbutton',
                 'name'  => 'delete',
                 'value' => get_string('deleteselectedentries', 'filter_translations'),

@@ -84,7 +84,31 @@ shell::require_css();
 echo $OUTPUT->header();
 shell::open(get_string('deeplglossarysync', 'filter_translations'),
     get_string('dashboardsync_desc', 'filter_translations'));
-echo $OUTPUT->heading(get_string('deeplglossarysyncpreview', 'filter_translations'), 3);
+
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-refresh', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', get_string('deeplglossarysyncpreview', 'filter_translations'),
+            ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ) .
+    html_writer::tag('div',
+        html_writer::link(new moodle_url('/filter/translations/manageglossary.php'),
+            html_writer::tag('i', '', ['class' => 'fa fa-book', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('manageglossary', 'filter_translations'), 'sr-only'),
+            [
+                'class' => 'lh-icon-action',
+                'aria-label' => get_string('manageglossary', 'filter_translations'),
+                'title' => get_string('manageglossary', 'filter_translations'),
+            ]
+        ),
+        ['class' => 'lh-plugin-card__actions filter-translations-card-header-actions']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-table-card');
 
 if (empty($rows)) {
     echo $OUTPUT->notification(get_string('deeplglossarynosyncgroups', 'filter_translations'), 'info');
@@ -112,14 +136,26 @@ if (empty($rows)) {
             $row->status,
             $row->pending,
             $row->lastsyncerror,
-            html_writer::link($row->syncurl, get_string('sync', 'filter_translations'), ['class' => 'btn btn-primary btn-sm']),
+            html_writer::div(
+                html_writer::link($row->syncurl,
+                    html_writer::tag('i', '', ['class' => 'fa fa-refresh', 'aria-hidden' => 'true']) .
+                    html_writer::span(get_string('sync', 'filter_translations'), 'sr-only'),
+                    [
+                        'class' => 'lh-icon-action lh-icon-action--primary',
+                        'aria-label' => get_string('sync', 'filter_translations'),
+                        'title' => get_string('sync', 'filter_translations'),
+                    ]
+                ),
+                'filter-translations-table-actions'
+            ),
         ];
     }
 
     echo html_writer::table($table);
 }
 
-echo $OUTPUT->single_button(new moodle_url('/filter/translations/manageglossary.php'),
-    get_string('manageglossary', 'filter_translations'), 'get');
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
+
 shell::close();
 echo $OUTPUT->footer();

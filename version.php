@@ -30,9 +30,4 @@ $plugin->release   = '2.1.2-beta';
 $plugin->requires  = 2022112814;        // Requires Moodle version 4.1.13.
 $plugin->component = 'filter_translations'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity  = MATURITY_BETA;
-$plugin->dependencies = [
-    'customfield_languageselect' => ANY_VERSION,
-    // Setup/maintenance pages render inside the LernHive plugin shell
-    // (local_lernhive\output\plugin_page / plugin_shell).
-    'local_lernhive' => ANY_VERSION,
-];
+$plugin->dependencies = [];

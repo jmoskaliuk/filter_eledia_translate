@@ -536,24 +536,25 @@ Dashboard ist erreichbar, zeigt Status korrekt und blendet Aktionen passend zur 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
 
-### test19 Setup-Onboarding-Workflow
+### test19 Plugin-Settings-Workflow
 
 Feature:            feat10
 Akzeptanzkriterium: feat10.AC01, feat10.AC02
 Typ:                manuell
 Status:             pending
 Letzter Lauf:       -
-Linked:             task17
+Linked:             task17, task20
 
 **Schritte**
-1. Als Admin `filter/translations/onboarding.php` oeffnen.
-2. Jeden Schritt speichern und die Weiterleitung zum Folgeschritt pruefen.
-3. Im Filter-Schritt globales Aktivieren und `Content and headings` setzen.
-4. Im Provider-Schritt DeepL API-Endpunkt und API-Key speichern und anschliessend `testdeepl.php` ausfuehren.
-5. Abschluss-Checks pruefen.
+1. Als Admin `filter/translations/pluginsettings.php` oeffnen.
+2. Abschnittsnavigation fuer `Filter`, `Kurssteuerung`, `DeepL und Anbieter`, `Protokollierung` und `Plugin-Einstellungen` pruefen.
+3. Im Filter-Abschnitt globales Aktivieren und `Content and headings` setzen.
+4. Im Provider-Abschnitt DeepL API-Endpunkt und API-Key speichern und anschliessend `testdeepl.php` ausfuehren.
+5. Pruefen, dass es nur einen globalen Speichern-Bereich am Seitenende gibt.
+6. `filter/translations/onboarding.php?step=course` oeffnen und Redirect auf den passenden Settings-Abschnitt pruefen.
 
 **Erwartetes Ergebnis**
-Der Wizard speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler und markiert erledigte Pflichtpunkte im Abschluss.
+Die Plugin-Settings-Seite speichert die jeweiligen Moodle-Settings korrekt, zeigt keine Fehler und alte Onboarding-Links bleiben kompatibel.
 
 **Beobachtetes Ergebnis**
 Code syntaktisch gueltig. Runtime-Pruefung in moodle52 bleibt offen.
@@ -578,27 +579,27 @@ Glossar-Eintraege lassen sich anlegen und nach Sprachrichtung filtern.
 **Beobachtetes Ergebnis**
 Feature-Datei angelegt. Lokaler Behat-Init ist blockiert, weil die Shell PHP 8.5.5 nutzt und das Moodle-Lockfile PHP bis 8.4 erlaubt.
 
-### test21 Behat Onboarding-Workflow
+### test21 Behat Plugin-Settings-Workflow
 
 Feature:            feat10
 Akzeptanzkriterium: feat10.AC01, feat10.AC02
 Typ:                automatisiert Behat
 Status:             blocked
-Letzter Lauf:       2026-06-20
-Linked:             task18
+Letzter Lauf:       2026-06-30
+Linked:             task18, task20
 
 **Schritte**
 1. Aus Moodle-Root: `vendor/bin/behat public/filter/translations/tests/behat/onboarding.feature`.
-2. Onboarding-Seite oeffnen.
-3. Filter-Schritt speichern.
-4. Course-Control-Schritt mit empfohlenem Fallback-Modus speichern und den Setup-Helper fuer Kursfelder ausfuehren.
-5. Provider-Schritt mit DeepL-Testdaten speichern.
+2. Plugin-Settings-Seite oeffnen.
+3. Filter-Settings speichern.
+4. Course-Control-Abschnitt ueber `onboarding.php?step=course` erreichen, empfohlenen Fallback-Modus speichern und den Setup-Helper fuer Kursfelder ausfuehren.
+5. Provider-Abschnitt ueber `onboarding.php?step=provider` erreichen und DeepL-Testdaten speichern.
 
 **Erwartetes Ergebnis**
-Der Wizard zeigt alle Schritte, speichert zentrale Settings ohne Live-API-Abhaengigkeit und bestaetigt die idempotente Anlage der Kursfelder inklusive Sprachfeld `eledia_translate_languages`, das vom Helper als `customfield_languageselect` verwaltet wird.
+Die konsolidierte Settings-Seite zeigt alle Abschnitte, speichert zentrale Settings ohne Live-API-Abhaengigkeit und bestaetigt die idempotente Anlage der Kursfelder inklusive Sprachfeld `eledia_translate_languages`, das vom Helper als `customfield_languageselect` verwaltet wird.
 
 **Beobachtetes Ergebnis**
-Feature-Datei angelegt. Lokaler Behat-Init ist blockiert durch PHP 8.5.5 statt kompatiblem PHP 8.4.
+Feature-Datei auf die Settings-Seite aktualisiert. Lokaler Behat-Lauf ist in der aktuellen Docker-/Moodle-Umgebung vor Szenariostart blockiert (`Composer\InstalledVersions` im Behat-Runner bzw. Upgrade-Settings-Screen im Browser); Ausfuehrung in sauberer CI-/PHP-8.4-Umgebung ausstehend.
 
 ### test22 Behat Translate-Menue und Inline-Toggle
 

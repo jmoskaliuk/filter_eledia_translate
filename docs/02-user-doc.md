@@ -241,28 +241,29 @@ Die haeufigsten Setup- und Pflegepfade sind von einer Seite aus erreichbar.
 
 ---
 
-### Setup onboarding (`feat10`)
+### Plugin-Einstellungen (`feat10`)
 
 **Was tut es?**
-Das Onboarding fuehrt Administratoren schrittweise durch die Erstkonfiguration des Filters.
+Die Plugin-Einstellungen buendeln die Erstkonfiguration des Filters in einer Seite innerhalb der Plugin-Shell.
 
 **Wann nutze ich es?**
 Bei neuen Installationen, nach groesseren Updates oder wenn die wichtigsten Einstellungen geprueft werden sollen.
 
 **Bedienung**
 
-1. `Site administration > Plugins > Filters > Content translations onboarding` oeffnen oder auf der Setup-Seite `Content translations onboarding` waehlen.
-2. Im Schritt `Filter` den Filter aktivieren und fuer `Content and headings` einschalten.
-3. Im Schritt `Course control` Steuerquelle, Tag und Course-Custom-Field-Shortnames pruefen.
-4. Im Schritt `DeepL and providers` Reverse Lookup und/oder DeepL inklusive API-Endpunkt und API-Key konfigurieren.
-5. Im Schritt `Logging` Missing-/Stale-/History-Logging und ausgeschlossene Seiten pflegen.
-6. Im Schritt `Glossary` Glossarverwaltung, Import, Export oder DeepL-Sync oeffnen.
-7. Im Schritt `Finish` die Setup-Checks pruefen.
+1. `Site administration > Plugins > Filters > Settings` oeffnen oder im Dashboard `Einstellungen` waehlen.
+2. Ueber die Abschnittsnavigation zu `Filter`, `Kurssteuerung`, `DeepL und Anbieter`, `Protokollierung` oder `Plugin-Einstellungen` springen.
+3. Im Abschnitt `Filter` den Filter aktivieren und fuer `Content and headings` einschalten.
+4. Im Abschnitt `Kurssteuerung` Steuerquelle, Tag und Course-Custom-Field-Shortnames pruefen.
+5. Im Abschnitt `DeepL und Anbieter` Reverse Lookup und/oder DeepL inklusive API-Endpunkt und API-Key konfigurieren.
+6. Im Abschnitt `Protokollierung` Missing-/Stale-/History-Logging und ausgeschlossene Seiten pflegen.
+7. Am Seitenende `Aenderungen speichern` auswaehlen.
 
 **Erwartetes Ergebnis**
-Admins koennen die wichtigsten Pflicht- und Qualitaetseinstellungen in einem gefuehrten Ablauf erledigen.
+Admins koennen die wichtigsten Pflicht- und Qualitaetseinstellungen in einer konsolidierten Seite erledigen.
 
 **Hinweise**
 
-- Der DeepL API-Key wird nur aktualisiert, wenn im Onboarding ein neuer Wert eingetragen wird.
+- Alte Links auf `filter/translations/onboarding.php?step=...` bleiben gueltig und leiten auf den passenden Abschnitt der Settings-Seite weiter.
+- Der DeepL API-Key wird nur aktualisiert, wenn in den Plugin-Einstellungen ein neuer Wert eingetragen wird.
 - Aktivitaetstitel werden nur uebersetzt, wenn der Filter fuer Ueberschriften aktiviert ist.

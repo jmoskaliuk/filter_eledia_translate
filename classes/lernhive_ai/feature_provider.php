@@ -33,24 +33,34 @@ use moodle_url;
 /**
  * Registers the translation workflow with the LernHive AI Suite.
  *
+ * Soft integration: filter_translations is a standalone Moodle plugin. This
+ * class is only autoloaded by local_lernhive_ai's feature discovery convention
+ * when the eledia.ai suite is installed. The guard below keeps discovery
+ * defensive if the suite classes are unavailable.
+ *
  * The descriptor deliberately uses the roadmap id `translate` so the
  * live filter plugin replaces the AI Suite's coming-soon tile.
  */
 final class feature_provider implements feature_provider_contract {
     #[\Override]
     public static function get_descriptors(): array {
+        if (!class_exists(descriptor::class)) {
+            // local_lernhive_ai is not installed; expose no AI descriptors.
+            return [];
+        }
+
         return [
             new descriptor(
                 id: 'translate',
                 component: 'filter_translations',
-                name: get_string('feature_translate_name', 'local_lernhive_ai'),
-                description: get_string('feature_translate_desc', 'local_lernhive_ai'),
+                name: get_string('feature_translate_name', 'filter_translations'),
+                description: get_string('feature_translate_desc', 'filter_translations'),
                 launchurl: new moodle_url('/filter/translations/index.php'),
                 icon: 'languages',
                 capability: 'filter/translations:edittranslations',
-                configurl: new moodle_url('/admin/settings.php', ['section' => 'filtersettingtranslations']),
+                configurl: new moodle_url('/filter/translations/pluginsettings.php'),
                 comingsoon: false,
-                detaildescription: get_string('feature_translate_detail', 'local_lernhive_ai'),
+                detaildescription: get_string('feature_translate_detail', 'filter_translations'),
             ),
         ];
     }

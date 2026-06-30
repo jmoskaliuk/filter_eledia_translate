@@ -16,6 +16,7 @@
 
 use filter_translations\manageglossary_filterform;
 use filter_translations\manageglossary_table;
+use filter_translations\glossary_sync;
 use filter_translations\output\shell;
 
 require(__DIR__ . '/../../config.php');
@@ -67,31 +68,166 @@ $PAGE->set_url($baseurl);
 $table = new manageglossary_table($data, 'sourcephrase');
 $table->define_baseurl($baseurl);
 
+$syncstatuses = glossary_sync::status_options();
+$glossarygroups = glossary_sync::groups();
+$courses = [];
+$courseids = [];
+foreach ($glossarygroups as $group) {
+    if (!empty($group->courseid)) {
+        $courseids[] = (int)$group->courseid;
+    }
+}
+$courseids = array_values(array_unique($courseids));
+if (!empty($courseids)) {
+    $courserecords = $DB->get_records_list('course', 'id', $courseids, '', 'id, fullname');
+    foreach ($courserecords as $course) {
+        $courses[$course->id] = format_string($course->fullname, true,
+            ['context' => context_course::instance($course->id)]);
+    }
+}
+$languagecode = static function(string $language): string {
+    return strtoupper(str_replace('_', '-', $language));
+};
+$iconaction = static function(moodle_url $url, string $label, string $icon, string $modifier = ''): string {
+    return html_writer::link($url,
+        html_writer::tag('i', '', ['class' => 'fa ' . $icon, 'aria-hidden' => 'true']) .
+        html_writer::span($label, 'sr-only'),
+        [
+            'class' => trim('lh-icon-action ' . $modifier),
+            'aria-label' => $label,
+            'title' => $label,
+        ]
+    );
+};
+
 shell::require_css();
 echo $OUTPUT->header();
 shell::open(get_string('manageglossary', 'filter_translations'),
     get_string('dashboardglossary_desc', 'filter_translations'));
+
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card filter-translations-filter-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-filter', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', get_string('filteroptions', 'filter_translations'),
+            ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-form-card');
 echo $form->render();
-echo html_writer::start_div('mb-3');
-echo $OUTPUT->single_button(new moodle_url('/filter/translations/editglossaryentry.php', ['returnurl' => $PAGE->url->out(false)]),
-    get_string('createglossaryentry', 'filter_translations'));
-echo $OUTPUT->single_button(new moodle_url('/filter/translations/manageglossarysync.php'),
-    get_string('deeplglossarysync', 'filter_translations'));
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
+
+$actions = [];
+$actions[] = $iconaction(
+    new moodle_url('/filter/translations/editglossaryentry.php', ['returnurl' => $PAGE->url->out(false)]),
+    get_string('createglossaryentry', 'filter_translations'),
+    'fa-plus',
+    'lh-icon-action--primary'
+);
+$actions[] = $iconaction(
+    new moodle_url('/filter/translations/manageglossarysync.php'),
+    get_string('deeplglossarysync', 'filter_translations'),
+    'fa-refresh'
+);
 if (has_capability('filter/translations:exporttranslations', $context)) {
-    echo $OUTPUT->single_button(new moodle_url('/filter/translations/glossaryexport.php', [
+    $actions[] = $iconaction(new moodle_url('/filter/translations/glossaryexport.php', [
         'sourcephrase' => $sourcephrase,
         'targetphrase' => $targetphrase,
         'sourcelanguage' => $sourcelanguage,
         'targetlanguage' => $targetlanguage,
         'status' => $status,
         'courseid' => $courseid,
-    ]), get_string('exportglossary', 'filter_translations'));
+    ]),
+        get_string('exportglossary', 'filter_translations'),
+        'fa-download');
 }
 if (has_capability('filter/translations:bulkimporttranslations', $context)) {
-    echo $OUTPUT->single_button(new moodle_url('/filter/translations/glossaryimport.php'),
-        get_string('importglossary', 'filter_translations'));
+    $actions[] = $iconaction(new moodle_url('/filter/translations/glossaryimport.php'),
+        get_string('importglossary', 'filter_translations'),
+        'fa-upload');
+}
+
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-sitemap', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', get_string('glossarygroups', 'filter_translations'),
+            ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-table-card filter-translations-glossary-groups');
+if (empty($glossarygroups)) {
+    echo html_writer::div(
+        html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-sitemap', 'aria-hidden' => 'true']),
+            'lh-plugin-empty-state__icon') .
+        html_writer::tag('p', get_string('deeplglossarynosyncgroups', 'filter_translations'),
+            ['class' => 'lh-plugin-empty-state__text']),
+        'lh-plugin-empty-state lh-table-empty'
+    );
+} else {
+    $grouptable = new html_table();
+    $grouptable->head = [
+        get_string('glossaryscope', 'filter_translations'),
+        get_string('languagepair', 'filter_translations'),
+        get_string('entries', 'filter_translations'),
+        get_string('status', 'filter_translations'),
+        get_string('actions'),
+    ];
+    foreach ($glossarygroups as $group) {
+        $scope = empty($group->courseid) ? get_string('glossaryscope_global', 'filter_translations') :
+            ($courses[$group->courseid] ?? (string)$group->courseid);
+        $statuslabel = $syncstatuses[$group->syncstatus] ?? $group->syncstatus;
+        $statusclass = empty($group->pending) && (int)$group->syncstatus === glossary_sync::STATUS_SYNCED ?
+            'lh-plugin-tag lh-plugin-tag--active' : 'lh-plugin-tag lh-plugin-tag--warning';
+        $syncurl = new moodle_url('/filter/translations/manageglossarysync.php', [
+            'sync' => 'single',
+            'courseid' => empty($group->courseid) ? 0 : $group->courseid,
+            'sourcelanguage' => $group->sourcelanguage,
+            'targetlanguage' => $group->targetlanguage,
+            'sesskey' => sesskey(),
+        ]);
+        $languagepair = $languagecode($group->sourcelanguage) . ' -> ' . $languagecode($group->targetlanguage);
+        $synclabel = get_string('sync', 'filter_translations') . ': ' . $scope . ', ' . $languagepair;
+        $grouptable->data[] = [
+            s($scope),
+            html_writer::span($languagecode($group->sourcelanguage), 'lh-plugin-tag') .
+                html_writer::span(' -> ', 'filter-translations-language-pair-separator') .
+                html_writer::span($languagecode($group->targetlanguage), 'lh-plugin-tag'),
+            (int)$group->entrycount,
+            html_writer::span($statuslabel, $statusclass),
+            html_writer::div(
+                $iconaction($syncurl, $synclabel, 'fa-refresh', 'lh-icon-action--primary'),
+                'filter-translations-table-actions'
+            ),
+        ];
+    }
+    echo html_writer::table($grouptable);
 }
 echo html_writer::end_div();
+echo html_writer::end_tag('section');
+
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-book', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', get_string('manageglossary', 'filter_translations'),
+            ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ) .
+    html_writer::tag('div', implode('', $actions), ['class' => 'lh-plugin-card__actions filter-translations-card-header-actions']),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-table-card');
 $table->out(100, true);
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
 shell::close();
 echo $OUTPUT->footer();

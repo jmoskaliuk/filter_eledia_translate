@@ -22,11 +22,11 @@
 
 use filter_translations\output\shell;
 use filter_translations\translationproviders\deepltranslate;
-use local_lernhive\output\plugin_page;
 
 require(__DIR__ . '/../../config.php');
 
 $targetlanguage = optional_param('targetlanguage', 'DE', PARAM_ALPHANUMEXT);
+$confirm = optional_param('confirm', 0, PARAM_BOOL);
 
 require_login();
 $context = context_system::instance();
@@ -44,12 +44,15 @@ $PAGE->set_heading('');
 $PAGE->set_pagelayout('standard');
 shell::require_css();
 
-$provider = new deepltranslate();
-$translated = $provider->test_connection($targetlanguage);
+$translated = null;
+if ($confirm) {
+    $provider = new deepltranslate();
+    $translated = $provider->test_connection($targetlanguage);
+}
 
 echo $OUTPUT->header();
 shell::open(get_string('deepltest', 'filter_translations'),
-    get_string('onboardingprovider_desc', 'filter_translations'), plugin_page::MODIFIER_READING);
+    get_string('onboardingprovider_desc', 'filter_translations'), shell::MODIFIER_READING);
 echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-wizard-card']);
 echo html_writer::tag('div',
     html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-flask', 'aria-hidden' => 'true']),
@@ -61,16 +64,27 @@ echo html_writer::tag('div',
     ['class' => 'lh-plugin-card__top']
 );
 echo html_writer::start_div('lh-plugin-card__body');
-if ($translated === null) {
+if (!$confirm) {
+    echo html_writer::tag('p', get_string('deepltest_confirm_desc', 'filter_translations'),
+        ['class' => 'filter-translations-card-description']);
+} else if ($translated === null) {
     echo $OUTPUT->notification(get_string('deepltestfailed', 'filter_translations'), \core\output\notification::NOTIFY_ERROR);
 } else {
     echo $OUTPUT->notification(get_string('deepltestsuccess', 'filter_translations', $translated),
         \core\output\notification::NOTIFY_SUCCESS);
 }
 echo html_writer::div(
+    (!$confirm ? html_writer::link(new moodle_url('/filter/translations/testdeepl.php', [
+            'sesskey' => sesskey(),
+            'targetlanguage' => $targetlanguage,
+            'confirm' => 1,
+        ]),
+            html_writer::tag('i', '', ['class' => 'fa fa-flask', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('deepltest_confirm_button', 'filter_translations')),
+            ['class' => 'lh-btn-open filter-translations-action-button']) : '') .
     html_writer::link(new moodle_url('/filter/translations/index.php'), get_string('pluginsetup', 'filter_translations'),
-        ['class' => 'lh-btn-open']) .
-    html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'filtersettingtranslations']),
+        ['class' => $confirm ? 'lh-btn-open' : 'lh-btn-outline']) .
+    html_writer::link(new moodle_url('/filter/translations/pluginsettings.php'),
         get_string('pluginsettings', 'filter_translations'), ['class' => 'lh-btn-outline']),
     'filter-translations-wizard-actions'
 );

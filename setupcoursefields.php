@@ -22,9 +22,10 @@
 
 use filter_translations\course_customfields;
 use filter_translations\output\shell;
-use local_lernhive\output\plugin_page;
 
 require(__DIR__ . '/../../config.php');
+
+$confirm = optional_param('confirm', 0, PARAM_BOOL);
 
 require_login();
 $context = context_system::instance();
@@ -39,11 +40,14 @@ $PAGE->set_heading('');
 $PAGE->set_pagelayout('standard');
 shell::require_css();
 
-$messages = course_customfields::ensure();
+$messages = [];
+if ($confirm) {
+    $messages = course_customfields::ensure();
+}
 
 echo $OUTPUT->header();
 shell::open(get_string('setupcoursefields', 'filter_translations'),
-    get_string('coursecontrol_desc', 'filter_translations'), plugin_page::MODIFIER_READING);
+    get_string('coursecontrol_desc', 'filter_translations'), shell::MODIFIER_READING);
 echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-wizard-card']);
 echo html_writer::tag('div',
     html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-sliders-h', 'aria-hidden' => 'true']),
@@ -56,13 +60,25 @@ echo html_writer::tag('div',
     ['class' => 'lh-plugin-card__top']
 );
 echo html_writer::start_div('lh-plugin-card__body');
-foreach ($messages as $message) {
-    echo $OUTPUT->notification($message, \core\output\notification::NOTIFY_SUCCESS);
+if ($confirm) {
+    foreach ($messages as $message) {
+        echo $OUTPUT->notification($message, \core\output\notification::NOTIFY_SUCCESS);
+    }
+} else {
+    echo html_writer::tag('p', get_string('setupcoursefields_confirm_desc', 'filter_translations'),
+        ['class' => 'filter-translations-card-description']);
 }
 echo html_writer::div(
+    (!$confirm ? html_writer::link(new moodle_url('/filter/translations/setupcoursefields.php', [
+            'sesskey' => sesskey(),
+            'confirm' => 1,
+        ]),
+            html_writer::tag('i', '', ['class' => 'fa fa-sliders-h', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('setupcoursefields_confirm_button', 'filter_translations')),
+            ['class' => 'lh-btn-open filter-translations-action-button']) : '') .
     html_writer::link(new moodle_url('/filter/translations/index.php'), get_string('pluginsetup', 'filter_translations'),
-        ['class' => 'lh-btn-open']) .
-    html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'filtersettingtranslations']),
+        ['class' => $confirm ? 'lh-btn-open' : 'lh-btn-outline']) .
+    html_writer::link(new moodle_url('/filter/translations/pluginsettings.php'),
         get_string('pluginsettings', 'filter_translations'), ['class' => 'lh-btn-outline']),
     'filter-translations-wizard-actions'
 );

@@ -59,8 +59,8 @@ class manageglossary_table extends table_sql {
         $headers = [
             get_string('sourcephrase', 'filter_translations'),
             get_string('targetphrase', 'filter_translations'),
-            get_string('sourcelanguage', 'filter_translations'),
-            get_string('targetlanguage', 'filter_translations'),
+            get_string('sourcelanguage_short', 'filter_translations'),
+            get_string('targetlanguage_short', 'filter_translations'),
             get_string('courseid', 'filter_translations'),
             get_string('status', 'filter_translations'),
             get_string('priority', 'filter_translations'),
@@ -144,7 +144,7 @@ class manageglossary_table extends table_sql {
      * @return string
      */
     public function col_sourcelanguage($row): string {
-        return $this->languages[$row->sourcelanguage] ?? $row->sourcelanguage;
+        return $this->language_tag($row->sourcelanguage);
     }
 
     /**
@@ -154,7 +154,23 @@ class manageglossary_table extends table_sql {
      * @return string
      */
     public function col_targetlanguage($row): string {
-        return $this->languages[$row->targetlanguage] ?? $row->targetlanguage;
+        return $this->language_tag($row->targetlanguage);
+    }
+
+    /**
+     * Compact language cell with full language name as tooltip.
+     *
+     * @param string $language
+     * @return string
+     */
+    private function language_tag(string $language): string {
+        $label = $this->languages[$language] ?? $language;
+        $code = strtoupper(str_replace('_', '-', $language));
+
+        return html_writer::tag('span', s($code), [
+            'class' => 'lh-plugin-tag',
+            'title' => $label,
+        ]);
     }
 
     /**
@@ -189,9 +205,21 @@ class manageglossary_table extends table_sql {
      * @return string
      */
     public function col_actions($row): string {
-        return html_writer::link(new moodle_url('/filter/translations/editglossaryentry.php', [
-            'id' => $row->id,
-            'returnurl' => $this->baseurl->out(false),
-        ]), get_string('edit'));
+        $label = get_string('edit');
+        return html_writer::div(
+            html_writer::link(new moodle_url('/filter/translations/editglossaryentry.php', [
+                'id' => $row->id,
+                'returnurl' => $this->baseurl->out(false),
+            ]),
+                html_writer::tag('i', '', ['class' => 'fa fa-pencil', 'aria-hidden' => 'true']) .
+                html_writer::span($label, 'sr-only'),
+                [
+                    'class' => 'lh-icon-action',
+                    'aria-label' => $label,
+                    'title' => $label,
+                ]
+            ),
+            'filter-translations-table-actions'
+        );
     }
 }
