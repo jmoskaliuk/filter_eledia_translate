@@ -79,10 +79,18 @@ class managetranslations_table extends table_sql {
             $columns[] = 'select';
         }
 
-        $columns = array_merge($columns, ['md5key', 'targetlanguage', 'rawtext', 'substitutetext', 'usermodified']);
+        $columns = array_merge($columns, [
+            'md5key',
+            'targetlanguage',
+            'translationsource',
+            'rawtext',
+            'substitutetext',
+            'usermodified',
+        ]);
         $headers = array_merge($headers, [
-            get_string('md5key', 'filter_translations'),
-            get_string('targetlanguage', 'filter_translations'),
+            get_string('hash', 'filter_translations'),
+            get_string('targetlanguage_short', 'filter_translations'),
+            get_string('translationsource', 'filter_translations'),
             get_string('rawtext', 'filter_translations'),
             get_string('substitutetext', 'filter_translations'),
             get_string('translatedby', 'filter_translations'),
@@ -141,7 +149,8 @@ class managetranslations_table extends table_sql {
         $userfieldsapi = \core_user\fields::for_name()->including('username', 'deleted');
         $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
-        $this->set_sql('t.id, t.md5key, t.targetlanguage, t.rawtext, t.substitutetext, t.usermodified, t.contextid, ' . $userfields,
+        $this->set_sql('t.id, t.md5key, t.targetlanguage, t.translationsource, t.rawtext, t.substitutetext, ' .
+                't.usermodified, t.contextid, ' . $userfields,
                 '{filter_translations} t LEFT JOIN {user} u on t.usermodified = u.id',
             implode(' AND ', $wheres),
             $params);
@@ -202,17 +211,70 @@ class managetranslations_table extends table_sql {
     }
 
     /**
+     * Compact hash column.
+     *
+     * @param \stdClass $row
+     * @return string
+     */
+    public function col_md5key($row): string {
+        if ($this->is_downloading()) {
+            return $row->md5key;
+        }
+
+        return html_writer::tag('span',
+            html_writer::tag('i', '', ['class' => 'fa fa-eye', 'aria-hidden' => 'true']) .
+            html_writer::span($row->md5key, 'sr-only'),
+            [
+                'class' => 'lh-icon-action filter-translations-hash-eye',
+                'title' => $row->md5key,
+                'aria-label' => get_string('hash', 'filter_translations') . ': ' . $row->md5key,
+            ]
+        );
+    }
+
+    /**
      * Get the full name for ISO language code.
      *
      * @param $row
      * @return mixed
      */
     public function col_targetlanguage($row) {
-        if (isset($this->languages[$row->targetlanguage])) {
-            return $this->languages[$row->targetlanguage];
+        if ($this->is_downloading()) {
+            return $row->targetlanguage;
         }
 
-        return $row->targetlanguage;
+        if (isset($this->languages[$row->targetlanguage])) {
+            $label = $this->languages[$row->targetlanguage];
+        } else {
+            $label = $row->targetlanguage;
+        }
+
+        return html_writer::tag('span', strtoupper($row->targetlanguage), [
+            'class' => 'lh-plugin-tag',
+            'title' => $label,
+        ]);
+    }
+
+    /**
+     * Translation source.
+     *
+     * @param \stdClass $row
+     * @return string
+     */
+    public function col_translationsource($row): string {
+        if ($this->is_downloading()) {
+            return $row->translationsource == translation::SOURCE_AUTOMATIC ?
+                get_string('translationsource_automatic', 'filter_translations') :
+                get_string('translationsource_manual', 'filter_translations');
+        }
+
+        if ((int)$row->translationsource === translation::SOURCE_AUTOMATIC) {
+            return html_writer::span(get_string('translationsource_automatic', 'filter_translations'),
+                'lh-plugin-tag lh-plugin-tag--warning');
+        }
+
+        return html_writer::span(get_string('translationsource_manual', 'filter_translations'),
+            'lh-plugin-tag lh-plugin-tag--active');
     }
 
     /**
@@ -247,16 +309,38 @@ class managetranslations_table extends table_sql {
             return;
         }
 
-        return html_writer::link(
-            new moodle_url('/filter/translations/edittranslation.php', [
+        $actions = html_writer::link(new moodle_url('/filter/translations/edittranslation.php', [
                 'id' => $row->id,
                 'contextid' => $row->contextid,
                 'targetlanguage' => $row->targetlanguage,
                 'returnurl' => $PAGE->url,
             ]),
-            get_string('edittranslation', 'filter_translations'),
-            ['class' => 'btn btn-secondary']
+            html_writer::tag('i', '', ['class' => 'fa fa-pencil', 'aria-hidden' => 'true']) .
+            html_writer::span(get_string('edittranslation', 'filter_translations'), 'sr-only'),
+            [
+                'class' => 'lh-icon-action',
+                'aria-label' => get_string('edittranslation', 'filter_translations'),
+                'title' => get_string('edittranslation', 'filter_translations'),
+            ]
         );
+
+        if ((int)$row->translationsource === translation::SOURCE_AUTOMATIC) {
+            $actions .= html_writer::link(new moodle_url('/filter/translations/approvetranslation.php', [
+                    'id' => $row->id,
+                    'sesskey' => sesskey(),
+                    'returnurl' => $PAGE->url,
+                ]),
+                html_writer::tag('i', '', ['class' => 'fa fa-check', 'aria-hidden' => 'true']) .
+                html_writer::span(get_string('approvetranslation', 'filter_translations'), 'sr-only'),
+                [
+                    'class' => 'lh-icon-action lh-icon-action--primary',
+                    'aria-label' => get_string('approvetranslation', 'filter_translations'),
+                    'title' => get_string('approvetranslation', 'filter_translations'),
+                ]
+            );
+        }
+
+        return html_writer::div($actions, 'filter-translations-table-actions');
     }
 
     /**
@@ -296,7 +380,7 @@ class managetranslations_table extends table_sql {
 
             $deletebuttonparams = [
                 'type'  => 'submit',
-                'class' => 'btn btn-secondary mr-1',
+                'class' => 'lh-btn-outline filter-translations-action-button',
                 'id'    => 'deletetranslationsbutton',
                 'name'  => 'delete',
                 'value' => get_string('deleteselected', 'filter_translations'),

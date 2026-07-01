@@ -23,6 +23,7 @@
  */
 
 use filter_translations\translation;
+use filter_translations\output\shell;
 
 define('REASON_LANGNOTFOUND', 1); // Language not found on the site.
 define('REASON_RECORDEXISTS', 2); // Transaltion record already exsits.
@@ -52,7 +53,7 @@ $PAGE->set_context($context);
 
 $title = get_string('importtranslations', 'filter_translations');
 $PAGE->set_title($title);
-$PAGE->set_heading($title);
+$PAGE->set_heading('');
 $PAGE->set_pagelayout('standard');
 
 $form = new \filter_translations\form\import_form();
@@ -191,7 +192,10 @@ if ($form->is_cancelled()) {
     $csvimport->close();
 
     // Show the import summary.
+    shell::require_css();
     echo $OUTPUT->header();
+    shell::open($title, get_string('dashboardimport_desc', 'filter_translations'),
+        shell::MODIFIER_READING);
 
     $processedcount = $linenum - 2;
     $skippedcount = count($skipped);
@@ -211,17 +215,34 @@ if ($form->is_cancelled()) {
 
     echo $OUTPUT->render_from_template('filter_translations/import_summary', $data);
 
+    shell::close();
     echo $OUTPUT->footer();
 
     exit;
 }
 
+shell::require_css();
 echo $OUTPUT->header();
+shell::open($title, get_string('dashboardimport_desc', 'filter_translations'),
+    shell::MODIFIER_EDITING);
 
-echo '<div class="description">';
-echo get_string('importdescription', 'filter_translations');
-echo '</div>';
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-upload', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', $title, ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-form-card');
+echo html_writer::div(get_string('importdescription', 'filter_translations'),
+    'filter-translations-card-description');
 
 $form->display();
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
 
+shell::close();
 echo $OUTPUT->footer();

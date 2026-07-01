@@ -31,6 +31,10 @@ function xmldb_filter_translations_install() {
             'filter_translations');
     }
 
+    if (empty(get_config('filter_translations', 'columndefinition'))) {
+        set_config('columndefinition', \filter_translations\column_definition::default_json(), 'filter_translations');
+    }
+
     try {
         \filter_translations\course_customfields::ensure();
     } catch (\Throwable $e) {

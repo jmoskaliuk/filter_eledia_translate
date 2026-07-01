@@ -161,12 +161,12 @@ Wenn die Uebersetzungssteuerung sichtbar in den Kurseinstellungen gepflegt werde
 
 1. Moodle Course Custom Fields anlegen:
    - Checkbox mit Shortname `eledia_translate_enabled`
-   - Textfeld oder Textarea mit Shortname `eledia_translate_languages`
+   - Sprachauswahl-Feld `customfield_languageselect` mit Shortname `eledia_translate_languages`
 2. Plugin-Einstellungen oeffnen.
 3. Bei Bedarf `Create course translation fields` ausfuehren, um die empfohlenen Kursfelder automatisch anzulegen.
 4. Unter `Course translation control` den Control Source pruefen. Empfohlen und voreingestellt ist `Course custom fields, then legacy tags`.
 5. Im Kurs das Aktivierungsfeld setzen.
-6. Optional Zielsprachen als Moodle-Sprachcodes eintragen, z. B. `de, fr, es`.
+6. Optional Zielsprachen ueber das Autocomplete-Multiselect auswaehlen, z. B. Deutsch, Franzoesisch und Spanisch.
 
 **Erwartetes Ergebnis**
 Der Kurs wird nur uebersetzt, wenn die Kurssteuerung ihn erlaubt. Zielsprachen koennen pro Kurs eingeschraenkt werden.
@@ -174,6 +174,7 @@ Der Kurs wird nur uebersetzt, wenn die Kurssteuerung ihn erlaubt. Zielsprachen k
 **Hinweise**
 
 - Bleibt das Sprachfeld leer, sind alle Sprachen erlaubt.
+- Der Setup-Helper wandelt ein bestehendes altes Text-/Textarea-Sprachfeld mit demselben Shortname in die neue Sprachauswahl um und uebernimmt vorhandene Codes als Auswahlwerte.
 - Der Modus `Course custom fields, then legacy tags` schuetzt bestehende Kurse, die noch mit Tags wie `deepl` und Sprachcodes arbeiten.
 - Neue Installationen und Upgrades versuchen, die empfohlenen Kursfelder automatisch anzulegen.
 - Bestehende Installationen mit dem alten Modus `Legacy course tags only` werden beim Plugin-Upgrade auf den empfohlenen Fallback-Modus umgestellt.
@@ -240,28 +241,29 @@ Die haeufigsten Setup- und Pflegepfade sind von einer Seite aus erreichbar.
 
 ---
 
-### Setup onboarding (`feat10`)
+### Plugin-Einstellungen (`feat10`)
 
 **Was tut es?**
-Das Onboarding fuehrt Administratoren schrittweise durch die Erstkonfiguration des Filters.
+Die Plugin-Einstellungen buendeln die Erstkonfiguration des Filters in einer Seite innerhalb der Plugin-Shell.
 
 **Wann nutze ich es?**
 Bei neuen Installationen, nach groesseren Updates oder wenn die wichtigsten Einstellungen geprueft werden sollen.
 
 **Bedienung**
 
-1. `Site administration > Plugins > Filters > Content translations onboarding` oeffnen oder auf der Setup-Seite `Content translations onboarding` waehlen.
-2. Im Schritt `Filter` den Filter aktivieren und fuer `Content and headings` einschalten.
-3. Im Schritt `Course control` Steuerquelle, Tag und Course-Custom-Field-Shortnames pruefen.
-4. Im Schritt `DeepL and providers` Reverse Lookup und/oder DeepL inklusive API-Endpunkt und API-Key konfigurieren.
-5. Im Schritt `Logging` Missing-/Stale-/History-Logging und ausgeschlossene Seiten pflegen.
-6. Im Schritt `Glossary` Glossarverwaltung, Import, Export oder DeepL-Sync oeffnen.
-7. Im Schritt `Finish` die Setup-Checks pruefen.
+1. `Site administration > Plugins > Filters > Settings` oeffnen oder im Dashboard `Einstellungen` waehlen.
+2. Ueber die Abschnittsnavigation zu `Filter`, `Kurssteuerung`, `DeepL und Anbieter`, `Protokollierung` oder `Plugin-Einstellungen` springen.
+3. Im Abschnitt `Filter` den Filter aktivieren und fuer `Content and headings` einschalten.
+4. Im Abschnitt `Kurssteuerung` Steuerquelle, Tag und Course-Custom-Field-Shortnames pruefen.
+5. Im Abschnitt `DeepL und Anbieter` Reverse Lookup und/oder DeepL inklusive API-Endpunkt und API-Key konfigurieren.
+6. Im Abschnitt `Protokollierung` Missing-/Stale-/History-Logging und ausgeschlossene Seiten pflegen.
+7. Am Seitenende `Aenderungen speichern` auswaehlen.
 
 **Erwartetes Ergebnis**
-Admins koennen die wichtigsten Pflicht- und Qualitaetseinstellungen in einem gefuehrten Ablauf erledigen.
+Admins koennen die wichtigsten Pflicht- und Qualitaetseinstellungen in einer konsolidierten Seite erledigen.
 
 **Hinweise**
 
-- Der DeepL API-Key wird nur aktualisiert, wenn im Onboarding ein neuer Wert eingetragen wird.
+- Alte Links auf `filter/translations/onboarding.php?step=...` bleiben gueltig und leiten auf den passenden Abschnitt der Settings-Seite weiter.
+- Der DeepL API-Key wird nur aktualisiert, wenn in den Plugin-Einstellungen ein neuer Wert eingetragen wird.
 - Aktivitaetstitel werden nur uebersetzt, wenn der Filter fuer Ueberschriften aktiviert ist.

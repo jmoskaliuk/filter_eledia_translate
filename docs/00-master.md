@@ -12,7 +12,7 @@
 - **Ziel:** Uebersetzung von nutzergenerierten Moodle-Inhalten ueber einen Textfilter, inklusive manueller Uebersetzungen, optionaler automatischer Provider, Hash-basierter Wiedererkennung und Verwaltungsoberflaechen.
 - **Tech Stack:** Moodle Filter Plugin, PHP, Moodle Persistent API, XMLDB, Mustache, AMD JavaScript, PHPUnit.
 - **Mindestversion:** Moodle 4.1.13 laut `version.php`.
-- **Repository:** https://github.com/jmoskaliuk/filter_eledia_translate
+- **Repository:** https://gitlab.eledia.de/eledia_plugins/filter-eledia-translations
 
 ---
 

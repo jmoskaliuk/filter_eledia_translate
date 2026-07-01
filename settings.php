@@ -33,8 +33,8 @@ if ($hassiteconfig) {
         'filter/translations:edittranslations'));
 
     $ADMIN->add('filtersettings', new admin_externalpage('filtertranslationsonboarding',
-        get_string('onboardingtitle', 'filter_translations'),
-        $CFG->wwwroot . '/filter/translations/onboarding.php',
+        get_string('navsetup', 'filter_translations'),
+        $CFG->wwwroot . '/filter/translations/pluginsettings.php',
         'moodle/site:config'));
 }
 
@@ -45,9 +45,9 @@ if ($ADMIN->fulltree) {
         html_writer::link(new moodle_url('/filter/translations/index.php'),
             get_string('pluginsetup', 'filter_translations'), ['class' => "btn btn-primary"])));
 
-    $settings->add(new admin_setting_heading('onboarding', '',
-        html_writer::link(new moodle_url('/filter/translations/onboarding.php'),
-            get_string('onboardingtitle', 'filter_translations'), ['class' => "btn btn-primary"])));
+    $settings->add(new admin_setting_heading('pluginshellsettings', '',
+        html_writer::link(new moodle_url('/filter/translations/pluginsettings.php'),
+            get_string('navsetup', 'filter_translations'), ['class' => "btn btn-primary"])));
 
     $settings->add(new admin_setting_heading('managetranslations', '',
         html_writer::link(new moodle_url('/filter/translations/managetranslations.php'),
@@ -150,7 +150,7 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtextarea('filter_translations/columndefinition',
         new lang_string('columndefinition', 'filter_translations'),
         new lang_string('columndefinition_desc', 'filter_translations'),
-        '')
+        \filter_translations\column_definition::default_json())
     );
 
     $settings->add(new admin_setting_heading('languagestringreverseapi',

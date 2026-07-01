@@ -29,7 +29,7 @@ Das Repository muss im Moodle-Checkout als Plugin-Pfad verfuegbar sein:
 
 ```bash
 export MOODLE_ROOT=/path/to/moodle
-ln -s /Users/moskaliuk/Documents/Code/filter_eledia-translate "$MOODLE_ROOT/filter/translations"
+ln -s /Users/moskaliuk/Documents/Code/filter_eledia-translate "$MOODLE_ROOT/public/filter/translations"
 cd "$MOODLE_ROOT"
 php admin/cli/upgrade.php
 ```
@@ -45,7 +45,8 @@ php admin/cli/upgrade.php
 | `classes/translation_issue.php` | Persistent Model fuer fehlende oder stale Uebersetzungen. |
 | `classes/translationproviders/*` | Reverse Lookup und DeepL. |
 | `index.php` | Zentrales Setup-Dashboard fuer Status, Konfiguration und Workflow-Links. |
-| `onboarding.php` | Gefuehrter Admin-Workflow fuer Erstkonfiguration und Setup-Checks. |
+| `pluginsettings.php` | Konsolidierte Plugin-Shell-Seite fuer Filter-, Kurs-, Provider-, Logging- und erweiterte Settings. |
+| `onboarding.php` | Kompatibilitaets-Redirect auf `pluginsettings.php#<section>` fuer alte Onboarding-Links. |
 | `classes/*_table.php` | Moodle-Tabellen fuer Verwaltungsseiten. |
 | `classes/*_form.php` und `classes/form/*` | Moodle Forms fuer Filter, Import und Export. |
 | `classes/task/*` | Scheduled Task Implementierungen. |
@@ -120,9 +121,9 @@ Der Runtime-Default ist `course_translation_policy::DEFAULT_CONTROL_SOURCE = cus
 Default-Custom-Field-Shortnames:
 
 - `eledia_translate_enabled`: Checkbox oder bool-artiges Feld fuer Kursuebersetzung aktiv.
-- `eledia_translate_languages`: Text/Textarea mit Moodle-Sprachcodes, getrennt durch Komma, Leerzeichen, Semikolon, Pipe oder Zeilenumbruch.
+- `eledia_translate_languages`: `customfield_languageselect` Autocomplete-Multiselect fuer erlaubte Moodle-Zielsprachen.
 
-Leeres Sprachfeld bedeutet: alle Sprachen sind erlaubt, solange `eledia_translate_enabled` aktiv ist.
+Leeres Sprachfeld bedeutet: alle Sprachen sind erlaubt, solange `eledia_translate_enabled` aktiv ist. Der Setup-Helper erzeugt neue Sprachfelder mit Typ `languageselect`; vorhandene Legacy-Text-/Textarea-Felder mit dem konfigurierten Shortname werden beim Helper-Lauf auf diesen Typ umgestellt, wobei bestehende kommagetrennte Sprachcodes in `charvalue` normalisiert werden.
 
 ## Automatische Provider
 
@@ -144,7 +145,7 @@ Google Translate ist nicht mehr Teil der aktiven Provider-Pipeline.
 
 Einstellungen sind in `settings.php` definiert.
 
-`settings.php` registriert zusaetzlich die Admin-Externalpages `filtertranslationsdashboard` und `filtertranslationsonboarding` unter `filtersettings`. Das Dashboard lebt in `index.php`; der gefuehrte Admin-Workflow lebt in `onboarding.php`. Nutzer mit `filter/translations:edittranslations` duerfen das Dashboard oeffnen; Admin-only Links werden dort ueber `moodle/site:config` und `moodle/course:configurecustomfields` ausgeblendet. Das Onboarding benoetigt `moodle/site:config`, weil es globale Filter- und Provider-Einstellungen inklusive DeepL API-Key speichern kann.
+`settings.php` registriert zusaetzlich die Admin-Externalpages `filtertranslationsdashboard` und `filtertranslationsonboarding` unter `filtersettings`. Das Dashboard lebt in `index.php`; die konsolidierte Settings-Seite lebt in `pluginsettings.php`. Nutzer mit `filter/translations:edittranslations` duerfen das Dashboard oeffnen; Admin-only Links werden dort ueber `moodle/site:config` und `moodle/course:configurecustomfields` ausgeblendet. Die Plugin-Shell-Settings benoetigen `moodle/site:config`, weil sie globale Filter- und Provider-Einstellungen inklusive DeepL API-Key speichern koennen.
 
 Wichtige Gruppen:
 
@@ -193,7 +194,7 @@ Vorhandene Tests:
 Behat-Tests:
 
 - `tests/behat/manage_glossary.feature` prueft Glossar-Anlage und Sprachfilter.
-- `tests/behat/onboarding.feature` prueft Onboarding-Schritte und Speichern zentraler Settings.
+- `tests/behat/onboarding.feature` prueft die konsolidierte Plugin-Settings-Seite, Redirect-Kompatibilitaet von `onboarding.php?step=...` und Speichern zentraler Settings.
 - `tests/behat/inline_translation.feature` prueft den Navbar-Translate-Dropdown und den Inline-Translation-Toggle.
 
 Ausfuehrung aus dem Moodle-Root:
@@ -205,7 +206,7 @@ vendor/bin/phpunit --testsuite filter_translations_testsuite
 Fallback, falls die Testsuite lokal nicht registriert ist:
 
 ```bash
-vendor/bin/phpunit filter/translations/tests
+vendor/bin/phpunit public/filter/translations/tests
 ```
 
 Behat aus dem Moodle-Root:
@@ -259,7 +260,7 @@ Implementiert ueber `classes/course_translation_policy.php`, Admin-Settings in `
 
 Die Implementierung nutzt Moodle Course Custom Fields ueber die Tabellen `customfield_category`, `customfield_field` und `customfield_data`, weil diese Felder bereits im Moodle-Kursformular erscheinen und keine eigene Kursformular-Erweiterung noetig ist.
 
-`classes/course_customfields.php` legt die empfohlenen Course Custom Fields ueber `core_course\customfield\course_handler` idempotent an. Der Helper wird ueber `setupcoursefields.php`, `db/install.php` und die Upgrade-Steps `2026052300` und `2026062000` genutzt.
+`classes/course_customfields.php` legt die empfohlenen Course Custom Fields ueber `core_course\customfield\course_handler` idempotent an. Fuer bestehende Sprachfelder nutzt der Helper einen direkten DB-Record-Lookup, damit auch Legacy-Felder ausserhalb des aktuell geladenen Kategorie-Controllers zuverlaessig erkannt und bei Bedarf in `customfield_languageselect` konvertiert werden. Der Helper wird ueber `setupcoursefields.php`, `db/install.php` und die Upgrade-Steps `2026052300` und `2026062000` genutzt.
 
 ### Glossary management baseline (`feat07`)
 
@@ -325,20 +326,21 @@ Fehlerverhalten:
 
 Quellen: [DeepL v3 Create Glossary](https://developers.deepl.com/api-reference/multilingual-glossaries/create-a-glossary), [DeepL v3 Glossaries Overview](https://developers.deepl.com/api-reference/multilingual-glossaries), [DeepL v2 vs v3 endpoints](https://developers.deepl.com/api-reference/glossaries/v2-vs-v3-endpoints).
 
-### Setup onboarding workflow (`feat10`)
+### Plugin settings workflow (`feat10`)
 
-`onboarding.php` ist eine Moodle-Admin-Externalpage mit eigener Schrittsteuerung ueber den URL-Parameter `step`.
+`pluginsettings.php` ist eine Moodle-Admin-Externalpage in der standalone Plugin-Shell. Sie speichert alle zentralen Settings in einem Formular und nutzt eine Abschnittsnavigation mit Ankern. `onboarding.php` bleibt als Kompatibilitaets-Redirect bestehen und mappt bekannte `step`-Parameter auf die passenden Abschnittsanker.
 
-Implementierte Schritte:
+Implementierte Abschnitte:
 
 - `filter`: nutzt `filter_set_global_state()`, `filter_set_applies_to_strings()` und `reset_text_filters_cache()`.
 - `course`: schreibt `coursecontrolsource`, `coursetagenabled`, `coursefieldenabled` und `coursefieldlanguages`.
 - `provider`: schreibt Reverse-Lookup- und DeepL-Settings; `deepl_apikey` wird nur bei nicht leerer Eingabe ersetzt.
 - `logging`: schreibt Missing-/Stale-/History-Logging, `logdebounce` und `untranslatedpages`.
-- `glossary`: verlinkt bestehende Glossar-, Import-, Export- und Sync-Seiten.
-- `finish`: zeigt lesende Setup-Checks fuer die wichtigsten Konfigurationsrisiken.
+- `advanced`: schreibt Performance-, Cache-, Ausschluss- und Spaltendefinitionseinstellungen.
 
 Die Seite fuehrt keine eigene Validierung gegen die DeepL API aus; dafuer bleibt `testdeepl.php` verantwortlich.
+
+Die Shell-CSS wird standalone durch `styles.css` geliefert. Geteilte LernHive-Klassen wie `.lh-plugin-*`, `.lh-btn-*`, `.lh-icon-*` und `.lh-plugin-tag` sind unter `body.path-filter-translations` gescopt, damit das Plugin ohne `local_lernhive` funktioniert und gleichzeitig keine anderen LernHive-Plugins ueberschreibt.
 
 ## Technische Constraints
 

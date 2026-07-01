@@ -6,12 +6,12 @@ Full documentation available at: https://docs.moodle.org/en/Content_translation_
 
 Developer documentation for this repository follows the eLeDia.OS_DevFlow structure:
 
-- [Master](00-master.md)
-- [Features](01-features.md)
-- [User documentation](02-user-doc.md)
-- [Developer documentation](03-dev-doc.md)
-- [Tasks](04-tasks.md)
-- [Quality](05-quality.md)
+- [Master](docs/00-master.md)
+- [Features](docs/01-features.md)
+- [User documentation](docs/02-user-doc.md)
+- [Developer documentation](docs/03-dev-doc.md)
+- [Tasks](docs/04-tasks.md)
+- [Quality](docs/05-quality.md)
 
 # To Install it manually #
 - Unzip the filter_translations plugin in your "moodleroot""/filter/translations directory.

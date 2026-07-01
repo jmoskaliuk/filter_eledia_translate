@@ -17,7 +17,9 @@
 namespace filter_translations;
 
 use core_course\customfield\course_handler;
+use core_customfield\category_controller;
 use core_customfield\field_controller;
+use core_component;
 
 /**
  * Creates the recommended course custom fields for translation control.
@@ -55,17 +57,20 @@ class course_customfields {
         }
 
         $languagesshortname = self::languages_field_shortname();
-        if (self::field_exists($handler, $languagesshortname)) {
+        $languagesfield = self::field_record_by_shortname($languagesshortname);
+        if ($languagesfield) {
+            if (self::language_selector_available() && $languagesfield->type !== 'languageselect') {
+                self::convert_languages_field_to_selector((int)$languagesfield->id);
+            }
             $messages[] = get_string('coursefieldexists', 'filter_translations', $languagesshortname);
         } else {
             self::create_field($handler, $category, [
-                'type' => 'textarea',
+                'type' => self::languages_field_type(),
                 'shortname' => $languagesshortname,
                 'name' => get_string('coursefieldlanguages_name', 'filter_translations'),
                 'description' => get_string('coursefieldlanguages_field_desc', 'filter_translations'),
                 'configdata' => [
                     'defaultvalue' => '',
-                    'defaultvalueformat' => FORMAT_PLAIN,
                 ],
             ]);
             $messages[] = get_string('coursefieldcreated', 'filter_translations', $languagesshortname);
@@ -87,14 +92,7 @@ class course_customfields {
             }
         }
 
-        $categoryid = $handler->create_category(self::CATEGORY_NAME);
-        return $handler->get_category_from_array(
-            $handler->get_categories_with_fields(),
-            $categoryid,
-            $handler->get_component(),
-            $handler->get_area(),
-            $handler->get_itemid()
-        );
+        return category_controller::create($handler->create_category(self::CATEGORY_NAME), null, $handler);
     }
 
     /**
@@ -105,15 +103,108 @@ class course_customfields {
      * @return bool
      */
     private static function field_exists(course_handler $handler, string $shortname): bool {
+        return self::field_by_shortname($handler, $shortname) !== null;
+    }
+
+    /**
+     * Find a course custom field controller by shortname.
+     *
+     * @param course_handler $handler
+     * @param string $shortname
+     * @return field_controller|null
+     */
+    private static function field_by_shortname(course_handler $handler, string $shortname): ?field_controller {
         foreach ($handler->get_categories_with_fields() as $category) {
             foreach ($category->get_fields() as $field) {
                 if ($field->get('shortname') === $shortname) {
-                    return true;
+                    return $field;
                 }
             }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Find a course custom field DB record by shortname.
+     *
+     * @param string $shortname
+     * @return \stdClass|null
+     */
+    private static function field_record_by_shortname(string $shortname): ?\stdClass {
+        global $DB;
+
+        $sql = "SELECT f.*
+                  FROM {customfield_field} f
+                  JOIN {customfield_category} c ON c.id = f.categoryid
+                 WHERE c.component = :component
+                   AND c.area = :area
+                   AND f.shortname = :shortname";
+        return $DB->get_record_sql($sql, [
+            'component' => 'core_course',
+            'area' => 'course',
+            'shortname' => $shortname,
+        ], IGNORE_MISSING) ?: null;
+    }
+
+    /**
+     * Convert the legacy textarea language field to the language selector.
+     *
+     * Existing course values are copied from value to charvalue so the new
+     * autocomplete control opens with the same selected language codes.
+     *
+     * @param int $fieldid
+     */
+    private static function convert_languages_field_to_selector(int $fieldid): void {
+        global $DB;
+
+        $field = $DB->get_record('customfield_field', ['id' => $fieldid], '*', MUST_EXIST);
+        $configdata = json_decode((string)$field->configdata, true);
+        if (!is_array($configdata)) {
+            $configdata = [];
+        }
+
+        $configdata['defaultvalue'] = self::normalise_language_value($configdata['defaultvalue'] ?? '');
+        unset($configdata['defaultvalueformat']);
+
+        $field->type = 'languageselect';
+        $field->configdata = json_encode($configdata);
+        $field->timemodified = time();
+        $DB->update_record('customfield_field', $field);
+
+        $records = $DB->get_records('customfield_data', ['fieldid' => $fieldid]);
+        foreach ($records as $record) {
+            $languagevalue = self::normalise_language_value($record->charvalue ?: ($record->value ?? ''));
+            if ($languagevalue === (string)$record->charvalue) {
+                continue;
+            }
+            $record->charvalue = $languagevalue;
+            $record->timemodified = time();
+            $DB->update_record('customfield_data', $record);
+        }
+    }
+
+    /**
+     * Normalise language-code lists for storage in the selector field.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private static function normalise_language_value($value): string {
+        if (self::language_selector_available()) {
+            return implode(',', \customfield_languageselect\data_controller::normalise_language_codes($value));
+        }
+
+        $parts = preg_split('/[\s,;|]+/', strtolower((string)$value), -1, PREG_SPLIT_NO_EMPTY);
+        $languages = [];
+        foreach ($parts as $part) {
+            $code = strtolower(trim((string)$part));
+            if ($code !== '') {
+                $languages[$code] = $code;
+            }
+        }
+
+        return implode(',', array_values($languages));
     }
 
     /**
@@ -129,7 +220,7 @@ class course_customfields {
             'required' => 0,
             'uniquevalues' => 0,
             'locked' => 0,
-            'visibility' => course_handler::VISIBLETEACHERS,
+            'visibility' => course_handler::VISIBLETOTEACHERS,
             'defaultvalue' => '',
             'defaultvalueformat' => FORMAT_MOODLE,
             'displaysize' => 0,
@@ -158,6 +249,25 @@ class course_customfields {
         $handler->save_field_configuration($field, $record);
 
         return $field;
+    }
+
+    /**
+     * Get the best available custom field type for target languages.
+     *
+     * @return string
+     */
+    private static function languages_field_type(): string {
+        return self::language_selector_available() ? 'languageselect' : 'text';
+    }
+
+    /**
+     * Whether the optional searchable language custom field plugin is present.
+     *
+     * @return bool
+     */
+    private static function language_selector_available(): bool {
+        return class_exists('\customfield_languageselect\data_controller') ||
+            core_component::get_plugin_directory('customfield', 'languageselect') !== null;
     }
 
     /**

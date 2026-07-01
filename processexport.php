@@ -438,6 +438,11 @@ foreach ($catrs as $cat) {
     $questions = function_exists('get_questions_category') ? get_questions_category($cat, true, true, true, true) : [];
 
     foreach ($questions as $q) {
+        // Question name/title.
+        if (!empty($q->name)) {
+            $addexportitem($q->name, $coursecontext->id);
+        }
+
         // Question text.
         // Use text as is. Do not replace url placeholders.
         // TODO: In the future, we will always use url placeholders, instead of actual urls.
@@ -474,6 +479,20 @@ foreach ($catrs as $cat) {
         // Hints.
         foreach ($q->hints as $hint) {
             $addexportitem($hint->hint, $coursecontext->id);
+        }
+
+        if ($q->qtype === 'aitext') {
+            foreach (['graderinfo', 'responsetemplate', 'aiprompt', 'markscheme'] as $field) {
+                if (!empty($q->options->$field)) {
+                    $addexportitem($q->options->$field, $coursecontext->id);
+                }
+            }
+
+            foreach ($q->options->sampleresponses ?? [] as $sampleresponse) {
+                if (!empty($sampleresponse->response)) {
+                    $addexportitem($sampleresponse->response, $coursecontext->id);
+                }
+            }
         }
     }
 }

@@ -37,8 +37,6 @@ class manageglossary_filterform extends \moodleform {
 
         $mform = $this->_form;
 
-        $mform->addElement('header', 'filteroptions', get_string('filteroptions', 'filter_translations'));
-
         $languages = ['' => get_string('any', 'filter_translations')] + get_string_manager()->get_list_of_translations(true);
         $mform->addElement('select', 'sourcelanguage', get_string('sourcelanguage', 'filter_translations'), $languages);
         $mform->addElement('select', 'targetlanguage', get_string('targetlanguage', 'filter_translations'), $languages);

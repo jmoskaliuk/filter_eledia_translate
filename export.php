@@ -23,6 +23,7 @@
  */
 
 use filter_translations\translation;
+use filter_translations\output\shell;
 
 require(__DIR__ . '/../../config.php');
 
@@ -46,7 +47,7 @@ $PAGE->set_context($context);
 
 $title = get_string('exporttranslations', 'filter_translations');
 $PAGE->set_title($title);
-$PAGE->set_heading($title);
+$PAGE->set_heading('');
 $PAGE->set_pagelayout('standard');
 
 $form = new \filter_translations\form\exporttranslations_form(new moodle_url('/filter/translations/processexport.php'));
@@ -56,10 +57,27 @@ $data->targetlanguage = $targetlanguage;
 $data->course = $courseid;
 $form->set_data($data);
 
+shell::require_css();
 echo $OUTPUT->header();
-echo '<div class="description">';
-echo get_string('exportdescription', 'filter_translations');
-echo '</div>';
-$form->display();
+shell::open($title, get_string('dashboardexport_desc', 'filter_translations'),
+    shell::MODIFIER_EDITING);
 
+echo html_writer::start_tag('section', ['class' => 'lh-plugin-card filter-translations-workbench-card']);
+echo html_writer::tag('div',
+    html_writer::span(html_writer::tag('i', '', ['class' => 'fa fa-download', 'aria-hidden' => 'true']),
+        'lh-plugin-card__icon lh-plugin-card__icon--generic') .
+    html_writer::tag('div',
+        html_writer::tag('h2', $title, ['class' => 'lh-plugin-card__title']),
+        ['class' => 'lh-plugin-card__meta']
+    ),
+    ['class' => 'lh-plugin-card__top']
+);
+echo html_writer::start_div('lh-plugin-card__body filter-translations-form-card');
+echo html_writer::div(get_string('exportdescription', 'filter_translations'),
+    'filter-translations-card-description');
+$form->display();
+echo html_writer::end_div();
+echo html_writer::end_tag('section');
+
+shell::close();
 echo $OUTPUT->footer();

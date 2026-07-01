@@ -15,31 +15,40 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 
-<div class="generalbox">
-  <h2 class="h3">{{#str}} importsummary, filter_translations {{/str}}</h3>
+<section class="lh-plugin-card filter-translations-workbench-card">
+  <div class="lh-plugin-card__top">
+    <span class="lh-plugin-card__icon lh-plugin-card__icon--generic">
+      <i class="fa fa-check-square" aria-hidden="true"></i>
+    </span>
+    <div class="lh-plugin-card__meta">
+      <h2 class="lh-plugin-card__title">{{#str}} importsummary, filter_translations {{/str}}</h2>
+    </div>
+  </div>
+  <div class="lh-plugin-card__body filter-translations-table-card">
   <p>{{#str}} processedcount, filter_translations, {{processedcount}} {{/str}}</p>
   <p>{{#str}} skippedcount, filter_translations, {{skippedcount}} {{/str}}</p>
 
     <table class="table table-bordered">
-        <tr>
-            <thead>
+        <thead>
+            <tr>
                 <th>{{#str}} linenumber, filter_translations {{/str}}</th>
                 <th>{{#str}} md5key, filter_translations {{/str}}</th>
                 <th>{{#str}} targetlanguage, filter_translations {{/str}}</th>
                 <th>{{#str}} reason, filter_translations {{/str}}</th>
-            </thead>
-        </tr>
-        {{#skipped}}
-        <tr>
-            <tbody>
+            </tr>
+        </thead>
+        <tbody>
+            {{#skipped}}
+            <tr>
                 <td>{{{linenum}}}</td>
                 <td>{{{md5key}}}</td>
                 <td>{{{targetlanguage}}}</td>
                 <td>{{{reason}}}</td>
-            </tbody>
-        </tr>
-        {{/skipped}}
+            </tr>
+            {{/skipped}}
+        </tbody>
     </table>
 
-  <p><a class="btn btn-primary" href="{{continueurl}}">{{#str}} continue {{/str}}</a></p>
-</div>
+  <p><a class="lh-btn-open" href="{{continueurl}}">{{#str}} continue {{/str}}</a></p>
+  </div>
+</section>

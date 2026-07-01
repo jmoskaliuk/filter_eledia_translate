@@ -25,6 +25,7 @@ namespace filter_translations\task;
 use context_course;
 use context_module;
 use context_system;
+use filter_translations\column_definition;
 use filter_translations;
 
 defined('MOODLE_INTERNAL') || die();
@@ -59,7 +60,7 @@ class insert_spans extends \core\task\scheduled_task {
         $json = get_config('filter_translations', 'columndefinition');
 
         if (empty($json)) {
-            return; // Nothing to process.
+            $json = column_definition::default_json();
         }
 
         $columnsbytabletoprocess = json_decode($json);
@@ -90,7 +91,6 @@ class insert_spans extends \core\task\scheduled_task {
             }
         }
 
-        $anyexception = null;
         $transaction = $DB->start_delegated_transaction();
         foreach ($columnsbytabletoprocess as $table => $columns) {
             $filter = new filter_translations(context_system::instance(), []);
@@ -136,10 +136,8 @@ class insert_spans extends \core\task\scheduled_task {
 
                     continue; // Done with blocks.
                 } else if (!isset($columnsbytable[$table]) || !in_array($column, $columnsbytable[$table])) {
-                    $ex = new \moodle_exception('unknowncolumn', 'filter_translations');
-                    mtrace_exception($ex);
-                    $anyexception = $ex;
-                    continue; // Skip this and move to the next column.
+                    mtrace("-- Column $table -> $column cannot be processed. Skipping...");
+                    continue;
                 }
 
                 $rs = $DB->get_recordset_select($table, "$column IS NOT NULL AND $column <> ''");
@@ -165,10 +163,5 @@ class insert_spans extends \core\task\scheduled_task {
             mtrace('');
         }
         $transaction->allow_commit();
-
-        if ($anyexception) {
-            // If there was any error, ensure the task fails.
-            throw $anyexception;
-        }
     }
 }

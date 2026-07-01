@@ -23,6 +23,7 @@
 namespace filter_translations\task;
 
 use context_system;
+use filter_translations\column_definition;
 use filter_translations;
 
 /**
@@ -53,7 +54,7 @@ class replace_duplicate_hashes extends \core\task\scheduled_task {
         $json = get_config('filter_translations', 'columndefinition');
 
         if (empty($json)) {
-            return; // Nothing to process.
+            $json = column_definition::default_json();
         }
 
         $columnsbytabletoprocess = json_decode($json);
@@ -84,7 +85,6 @@ class replace_duplicate_hashes extends \core\task\scheduled_task {
             }
         }
 
-        $anyexception = null;
         $transaction = $DB->start_delegated_transaction();
         foreach ($columnsbytabletoprocess as $table => $columns) {
             if (time() >= $stoptime) {
@@ -147,10 +147,8 @@ class replace_duplicate_hashes extends \core\task\scheduled_task {
 
                     continue;
                 } else if (!isset($columnsbytable[$table]) || !in_array($column, $columnsbytable[$table])) {
-                    $ex = new \moodle_exception('unknowncolumn', 'filter_translations');
-                    mtrace_exception($ex);
-                    $anyexception = $ex;
-                    continue; // Skip this and move to the next column.
+                    mtrace("-- Column $table -> $column cannot be processed. Skipping...");
+                    continue;
                 }
                 mtrace("Started processing column: $table -> $column");
 
@@ -247,10 +245,5 @@ class replace_duplicate_hashes extends \core\task\scheduled_task {
             mtrace('');
         }
         $transaction->allow_commit();
-
-        if ($anyexception) {
-            // If there was any error, ensure the task fails.
-            throw $anyexception;
-        }
     }
 }
